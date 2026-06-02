@@ -961,6 +961,9 @@ input[type="range"]::-webkit-slider-thumb {
       <button class="btn btn-secondary" style="margin-bottom:4px" onclick="pullFromCloud()">
         📥 从云端下载
       </button>
+      <button class="btn btn-danger" style="font-size:12px;margin-top:4px" onclick="resetCloud()">
+        🗑️ 清除云端（重新开始）
+      </button>
       <div style="font-size:10px;color:var(--text-muted);margin-top:8px">
         💡 两个人用<u>同一个密钥</u>，照片日记实时同步
       </div>
@@ -1265,25 +1268,30 @@ async function setupSync() {
 async function syncFromCloud() {
   const token = getSyncToken();
   if (!token) return;
+  const stats = { memories: 0, photos: 0, failed: 0 };
   try {
     const resp = await fetch(CLOUD_API + '/' + SYNC_DATA_FILE, {
       headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json' }
     });
-    if (!resp.ok) return;
-    // GitHub API 返回 { content: "base64...", sha: "..." }
+    if (!resp.ok) { console.log('Cloud: no data file yet'); return; }
     const apiResp = await resp.json();
-    const rawContent = atob(apiResp.content);
-    const enc = JSON.parse(rawContent);
+    if (!apiResp.content) { console.log('Cloud: empty content'); return; }
+    // 解码外层（兼容新旧格式）
+    let rawContent = atob(apiResp.content);
+    let enc;
+    try { enc = JSON.parse(rawContent); }
+    catch (e) { console.log('Cloud: old format, try raw'); enc = apiResp; }
+    if (!enc.iv || !enc.data) { console.log('Cloud: unreadable format'); return; }
     // 解密
     const json = await decryptData(enc.iv, enc.data);
     const cloudData = JSON.parse(json);
     const local = await dbGetAll('memories', 'byDate', 'prev');
     const localMap = new Map(local.map(m => [m.id, m]));
+    stats.memories = cloudData.length;
+
     for (const cm of cloudData) {
       const localItem = localMap.get(cm.id);
-      // 新增或云端更新的才同步
       if (!localItem || (cm.createdAt && localItem.createdAt !== cm.createdAt)) {
-        // 如果有加密照片且本地没有，下载并解密
         if (cm._hasImage && (!localItem || !localItem.fullImage)) {
           try {
             const imgResp = await fetch(CLOUD_API + '/photos/' + cm.id + '.enc', {
@@ -1291,15 +1299,21 @@ async function syncFromCloud() {
             });
             if (imgResp.ok) {
               const imgApi = await imgResp.json();
-              const imgEnc = JSON.parse(atob(imgApi.content));
-              const blob = await decryptBlob(imgEnc.iv, imgEnc.data);
-              cm.fullImage = blob;
-              cm.thumbnail = await resizeBlob(blob, 300, 0.6);
+              if (imgApi.content) {
+                let imgEnc;
+                try { imgEnc = JSON.parse(atob(imgApi.content)); }
+                catch (e2) { imgEnc = imgApi; }
+                if (imgEnc.iv && imgEnc.data) {
+                  const blob = await decryptBlob(imgEnc.iv, imgEnc.data);
+                  cm.fullImage = blob;
+                  cm.thumbnail = await resizeBlob(blob, 300, 0.6);
+                  stats.photos++;
+                }
+              }
             }
-          } catch (e) { console.log('No photo for #' + cm.id + ':', e.message); }
+          } catch (e) { stats.failed++; console.log('Photo #' + cm.id + ' failed:', e.message); }
         }
         if (localItem && !cm.fullImage) {
-          // 保留本地已有的照片（云端不存大文件）
           cm.fullImage = localItem.fullImage;
           cm.thumbnail = localItem.thumbnail;
         }
@@ -1307,8 +1321,12 @@ async function syncFromCloud() {
       }
     }
     updateSyncStatus();
-    console.log('🔒 从云端解密同步了 ' + cloudData.length + ' 条记忆');
-  } catch (e) { console.log('No cloud data yet:', e.message); }
+    console.log('📥 同步完成:', stats.memories + '条记忆,' + stats.photos + '张照片,' + stats.failed + '个失败');
+    if (stats.failed > 0) showToast('📥 ' + stats.memories + '条记忆, ' + stats.photos + '张照片 (' + stats.failed + '张需对方重新上传)', 'info');
+  } catch (e) {
+    console.log('Cloud sync error:', e.message);
+    showToast('同步失败，请检查密钥和网络', 'error');
+  }
 }
 
 // 调整图片尺寸（从Blob）
@@ -1407,7 +1425,7 @@ async function uploadToCloud(memory) {
 async function syncNow() {
   const token = getSyncToken();
   if (!token) { showToast('请先在设置里配置同步密钥', 'info'); return; }
-  showToast('🔒 正在加密同步...', 'info');
+  showToast('🔒 正在全量同步（含照片）...', 'info');
   const all = await dbGetAll('memories', 'byDate', 'prev');
   const clean = all.map(m => { const c = { ...m }; delete c.thumbnail; delete c.fullImage; c._hasImage = !!(m.fullImage && m.fullImage instanceof Blob); return c; });
   const json = JSON.stringify(clean);
@@ -1431,8 +1449,55 @@ async function syncNow() {
       'Content-Type': 'application/json'
     }, body: JSON.stringify(body)
   });
-  if (resp.ok) { showToast('🔒 加密同步完成！' + clean.length + ' 条记忆（云端为密文）', 'success'); }
+  // 同步上传所有照片
+  let photoCount = 0;
+  for (const m of all) {
+    if (m.fullImage && m.fullImage instanceof Blob) {
+      try {
+        const encImg = await encryptBlob(m.fullImage);
+        let imgSha = null;
+        const path = 'photos/' + m.id + '.enc';
+        try {
+          const cr = await fetch(CLOUD_API + '/' + path, {
+            headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json' }
+          });
+          if (cr.ok) { const ex = await cr.json(); imgSha = ex.sha; }
+        } catch (ee) {}
+        const ib = { message: '📸 照片 #' + m.id, content: btoa(JSON.stringify(encImg)) };
+        if (imgSha) ib.sha = imgSha;
+        await fetch(CLOUD_API + '/' + path, {
+          method: 'PUT', headers: {
+            'Authorization': 'token ' + token,
+            'Accept': 'application/vnd.github+json',
+            'Content-Type': 'application/json'
+          }, body: JSON.stringify(ib)
+        });
+        photoCount++;
+      } catch (e) { console.log('Photo upload fail #' + m.id, e.message); }
+    }
+  }
+  if (resp.ok) { showToast('✅ 同步完成！' + clean.length + '条记忆 + ' + photoCount + '张照片', 'success'); }
   else { showToast('同步失败，请检查密钥', 'error'); }
+}
+
+async function resetCloud() {
+  const token = getSyncToken();
+  if (!token) { showToast('请先激活云同步', 'info'); return; }
+  if (!confirm('⚠️ 清除云端所有数据？本地数据不会丢失。')) return;
+  showToast('🗑️ 正在清除云端...', 'info');
+  try {
+    // 上传空数组覆盖云端
+    const enc = await encryptData('[]');
+    const body = { message: '🔄 云端重置', content: btoa(JSON.stringify(enc)) };
+    await fetch(CLOUD_API + '/' + SYNC_DATA_FILE, {
+      method: 'PUT', headers: {
+        'Authorization': 'token ' + token,
+        'Accept': 'application/vnd.github+json',
+        'Content-Type': 'application/json'
+      }, body: JSON.stringify(body)
+    });
+    showToast('✅ 云端已清除，请重新上传', 'success');
+  } catch (e) { showToast('清除失败', 'error'); }
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -2675,6 +2740,7 @@ async function pullFromCloud() {
 window.setupSync = setupSync;
 window.syncNow = syncNow;
 window.pullFromCloud = pullFromCloud;
+window.resetCloud = resetCloud;
 window.resetApp = resetApp;
 
 // ── 清除旧的 Service Worker（之前版本可能导致缓存问题）──
