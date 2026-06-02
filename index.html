@@ -1,0 +1,2271 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#ff6b81">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Love Memory">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='%23ff6b81' d='M462.3 62.6C407.5 15.9 326 24.3 275.7 76.2L256 96.5l-19.7-20.3C186.1 24.3 104.5 15.9 49.7 62.6c-62.8 53.6-66.1 149.8-9.9 207.9l193.5 199.8c12.5 12.9 32.8 12.9 45.3 0l193.5-199.8c56.3-58.1 53-154.3-9.8-207.9z'/%3E%3C/svg%3E">
+<title>💕 Love Memory</title>
+<style>
+/* ══════════════════════════════════════════════════════════════
+   CSS 自定义属性 (主题系统)
+   ══════════════════════════════════════════════════════════════ */
+:root {
+  --primary: #ff6b81;
+  --primary-dark: #ee5a6f;
+  --secondary: #ffb8c6;
+  --accent: #ff4757;
+  --bg: #0a0a12;
+  --bg-card: rgba(255,255,255,0.08);
+  --bg-card-hover: rgba(255,255,255,0.14);
+  --glass: rgba(255,255,255,0.06);
+  --glass-border: rgba(255,255,255,0.12);
+  --text: #f0e6e8;
+  --text-secondary: #b8a0a8;
+  --text-muted: #7a6670;
+  --shadow: 0 8px 32px rgba(0,0,0,0.4);
+  --shadow-lg: 0 16px 48px rgba(0,0,0,0.5);
+  --radius: 16px;
+  --radius-sm: 10px;
+  --radius-xs: 8px;
+  --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+[data-theme="blush"] {
+  --primary: #f8a4c8;
+  --primary-dark: #e893b6;
+  --secondary: #fcd5e4;
+  --accent: #e8879e;
+  --bg: #1a0a14;
+}
+
+[data-theme="lavender"] {
+  --primary: #b8a9c9;
+  --primary-dark: #a695ba;
+  --secondary: #d4c5e2;
+  --accent: #9b7db5;
+  --bg: #0f0c1a;
+}
+
+[data-theme="sunset"] {
+  --primary: #ff9a76;
+  --primary-dark: #f08a65;
+  --secondary: #ffc3a0;
+  --accent: #ff6f3c;
+  --bg: #1a0e08;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CSS 重置 & 基础样式
+   ══════════════════════════════════════════════════════════════ */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+body {
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  transition: background 0.8s ease;
+}
+
+input, textarea, button, select {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  border: none;
+  outline: none;
+  background: none;
+}
+
+button { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+input[type="file"] { display: none; }
+a { color: var(--primary); text-decoration: none; }
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 4px; }
+
+/* ══════════════════════════════════════════════════════════════
+   爱心Canvas & 背景层
+   ══════════════════════════════════════════════════════════════ */
+#heartsCanvas {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none; z-index: 1;
+}
+
+.bg-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: radial-gradient(ellipse at 50% 0%, rgba(255,107,129,0.08) 0%, transparent 60%),
+              radial-gradient(ellipse at 80% 80%, rgba(180,130,200,0.06) 0%, transparent 50%);
+  pointer-events: none; z-index: 0;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   密码锁屏
+   ══════════════════════════════════════════════════════════════ */
+.lock-screen {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  z-index: 1000;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg);
+  background-size: cover;
+  background-position: center;
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.lock-screen.hidden {
+  opacity: 0; transform: scale(1.05); pointer-events: none;
+}
+
+.lock-card {
+  text-align: center;
+  padding: 40px 30px;
+  border-radius: 24px;
+  background: var(--glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-lg);
+  max-width: 380px; width: 90%;
+  animation: lockIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes lockIn {
+  from { opacity: 0; transform: translateY(40px) scale(0.9); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.lock-icon {
+  font-size: 56px;
+  margin-bottom: 12px;
+  animation: heartbeat 1.5s ease-in-out infinite;
+}
+
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  15% { transform: scale(1.25); }
+  30% { transform: scale(1); }
+  45% { transform: scale(1.2); }
+  60% { transform: scale(1); }
+}
+
+.lock-title {
+  font-size: 24px; font-weight: 700;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 8px;
+  letter-spacing: 2px;
+}
+
+.lock-subtitle { font-size: 13px; color: var(--text-muted); margin-bottom: 28px; letter-spacing: 1px; }
+
+.pin-display {
+  display: flex; justify-content: center; gap: 14px; margin-bottom: 28px;
+}
+
+.pin-dot {
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  border: 2px solid var(--glass-border);
+  background: transparent;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.pin-dot.filled {
+  background: var(--primary);
+  border-color: var(--primary);
+  box-shadow: 0 0 16px rgba(255,107,129,0.5);
+  transform: scale(1.2);
+}
+
+.pin-dot.error {
+  background: #ff4757; border-color: #ff4757;
+  animation: shake 0.5s ease;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-6px); }
+  80% { transform: translateX(4px); }
+}
+
+.keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 280px; margin: 0 auto; }
+
+.keypad button {
+  aspect-ratio: 1;
+  border-radius: 50%;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  transition: all 0.15s ease;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.keypad button:active {
+  background: var(--primary);
+  border-color: var(--primary);
+  transform: scale(0.9);
+  box-shadow: 0 0 20px rgba(255,107,129,0.4);
+}
+
+.keypad .key-clear { font-size: 14px; color: var(--text-secondary); }
+.keypad .key-ok { font-size: 14px; color: var(--primary); font-weight: 700; background: rgba(255,107,129,0.15); }
+
+.lock-error { color: #ff4757; font-size: 12px; margin-top: 16px; min-height: 18px; letter-spacing: 1px; }
+.lock-footer { margin-top: 20px; }
+
+.lock-footer a {
+  font-size: 11px; color: var(--text-muted);
+  cursor: pointer; text-decoration: underline;
+  opacity: 0.5; transition: opacity 0.2s;
+}
+
+.lock-footer a:hover { opacity: 1; }
+
+/* ══════════════════════════════════════════════════════════════
+   应用主容器
+   ══════════════════════════════════════════════════════════════ */
+.app-container {
+  position: relative; width: 100%; height: 100%;
+  display: flex; flex-direction: column;
+  z-index: 10;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Tab导航栏
+   ══════════════════════════════════════════════════════════════ */
+.tab-bar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  height: 72px;
+  display: flex; align-items: center; justify-content: space-around;
+  background: rgba(10,10,18,0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--glass-border);
+  z-index: 100;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.tab-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 8px 16px;
+  border-radius: 12px;
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  transition: all 0.25s ease;
+  min-width: 56px;
+}
+
+.tab-btn .tab-icon { font-size: 22px; transition: transform 0.25s ease; }
+.tab-btn.active { color: var(--primary); }
+.tab-btn.active .tab-icon { transform: translateY(-2px); }
+.tab-btn:active .tab-icon { transform: scale(0.85); }
+
+/* ══════════════════════════════════════════════════════════════
+   视图容器
+   ══════════════════════════════════════════════════════════════ */
+.view {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  overflow-y: auto; overflow-x: hidden;
+  padding: 20px 16px 100px;
+  display: none;
+  animation: viewIn 0.35s ease;
+  -webkit-overflow-scrolling: touch;
+}
+
+.view.active { display: block; }
+
+@keyframes viewIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   纪念日横幅
+   ══════════════════════════════════════════════════════════════ */
+.anniversary-banner {
+  text-align: center; padding: 24px 20px;
+  margin-bottom: 20px; border-radius: 20px;
+  background: linear-gradient(135deg, rgba(255,107,129,0.15), rgba(255,184,198,0.08));
+  border: 1px solid rgba(255,107,129,0.2);
+  backdrop-filter: blur(10px);
+}
+
+.anniversary-banner .days-count {
+  font-size: 48px; font-weight: 800;
+  background: linear-gradient(135deg, #ff6b81, #ffb8c6, #ff6b81);
+  background-size: 200% auto;
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%, 100% { background-position: 0% center; }
+  50% { background-position: 200% center; }
+}
+
+.anniversary-banner .days-label { font-size: 14px; color: var(--text-secondary); letter-spacing: 2px; margin-top: 4px; }
+.anniversary-banner .next-milestone { font-size: 12px; color: var(--text-muted); margin-top: 8px; }
+
+/* ══════════════════════════════════════════════════════════════
+   时间轴卡片
+   ══════════════════════════════════════════════════════════════ */
+.timeline { position: relative; }
+
+.timeline::before {
+  content: ''; position: absolute; left: 20px; top: 0; bottom: 0;
+  width: 2px; background: linear-gradient(180deg, var(--primary), transparent);
+  opacity: 0.4;
+}
+
+.memory-card {
+  position: relative;
+  margin-left: 40px; margin-bottom: 16px;
+  padding: 16px; border-radius: var(--radius);
+  background: var(--bg-card);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  cursor: pointer;
+  transition: all 0.25s ease;
+  animation: cardIn 0.4s ease both;
+}
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.memory-card:hover { background: var(--bg-card-hover); transform: translateX(4px); }
+.memory-card:active { transform: scale(0.98); }
+
+.memory-card::before {
+  content: ''; position: absolute; left: -32px; top: 24px;
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--primary);
+  box-shadow: 0 0 10px var(--primary);
+}
+
+.memory-card .card-date {
+  font-size: 11px; color: var(--primary); letter-spacing: 2px;
+  margin-bottom: 8px; display: flex; align-items: center; gap: 6px;
+}
+
+.memory-card .card-thumb {
+  width: 100%; max-height: 240px; object-fit: cover;
+  border-radius: var(--radius-sm); margin-bottom: 10px;
+  background: var(--glass);
+}
+
+.memory-card .card-title {
+  font-size: 16px; font-weight: 600; color: var(--text);
+  margin-bottom: 4px; line-height: 1.4;
+}
+
+.memory-card .card-preview {
+  font-size: 13px; color: var(--text-secondary);
+  line-height: 1.5; display: -webkit-box;
+  -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+
+.card-type-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10px; padding: 3px 8px; border-radius: 20px;
+  background: rgba(255,107,129,0.15); color: var(--primary);
+  letter-spacing: 1px;
+}
+
+.empty-state {
+  text-align: center; padding: 60px 20px;
+  color: var(--text-muted);
+}
+
+.empty-state .empty-icon { font-size: 64px; margin-bottom: 16px; opacity: 0.6; }
+.empty-state .empty-text { font-size: 15px; letter-spacing: 1px; }
+.empty-state .empty-hint { font-size: 12px; margin-top: 8px; opacity: 0.6; }
+
+/* ══════════════════════════════════════════════════════════════
+   添加记忆视图
+   ══════════════════════════════════════════════════════════════ */
+.add-header {
+  text-align: center; margin-bottom: 24px;
+}
+
+.add-header h2 {
+  font-size: 22px; font-weight: 700; letter-spacing: 2px;
+  margin-bottom: 16px;
+}
+
+.segment-control {
+  display: flex; gap: 4px;
+  background: var(--glass); border-radius: 24px;
+  padding: 4px; max-width: 260px; margin: 0 auto;
+  border: 1px solid var(--glass-border);
+}
+
+.segment-btn {
+  flex: 1; padding: 10px 20px; border-radius: 20px;
+  font-size: 13px; font-weight: 600; letter-spacing: 1px;
+  color: var(--text-muted); transition: all 0.3s ease;
+}
+
+.segment-btn.active {
+  background: var(--primary); color: #fff;
+  box-shadow: 0 4px 16px rgba(255,107,129,0.3);
+}
+
+.upload-zone {
+  border: 2px dashed var(--glass-border); border-radius: var(--radius);
+  padding: 40px 20px; text-align: center;
+  margin: 16px 0; transition: all 0.3s ease;
+  background: var(--glass); cursor: pointer;
+}
+
+.upload-zone:hover, .upload-zone.drag-over {
+  border-color: var(--primary);
+  background: rgba(255,107,129,0.08);
+}
+
+.upload-zone .upload-icon { font-size: 48px; margin-bottom: 8px; }
+.upload-zone .upload-text { font-size: 14px; color: var(--text-secondary); letter-spacing: 1px; }
+.upload-zone .upload-hint { font-size: 11px; color: var(--text-muted); margin-top: 6px; }
+
+.preview-img {
+  max-width: 100%; max-height: 240px; border-radius: var(--radius-sm);
+  margin: 12px 0; display: block;
+}
+
+.form-group { margin-bottom: 16px; }
+.form-label { display: block; font-size: 12px; color: var(--text-secondary); letter-spacing: 2px; margin-bottom: 8px; text-transform: uppercase; }
+.form-input, .form-textarea {
+  width: 100%; padding: 14px 16px;
+  border-radius: var(--radius-sm); background: var(--glass);
+  border: 1px solid var(--glass-border); color: var(--text);
+  font-size: 15px; transition: all 0.3s ease;
+}
+
+.form-input:focus, .form-textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(255,107,129,0.1); }
+.form-textarea { min-height: 120px; resize: vertical; line-height: 1.6; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 14px 28px; border-radius: 24px;
+  font-size: 15px; font-weight: 600; letter-spacing: 1px;
+  transition: all 0.3s ease; width: 100%;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: #fff; box-shadow: 0 4px 20px rgba(255,107,129,0.3);
+}
+
+.btn-primary:hover { box-shadow: 0 6px 24px rgba(255,107,129,0.45); transform: translateY(-1px); }
+.btn-primary:active { transform: scale(0.97); }
+.btn-primary:disabled { opacity: 0.5; pointer-events: none; }
+
+.btn-danger {
+  background: rgba(255,71,87,0.15); color: #ff4757;
+  border: 1px solid rgba(255,71,87,0.3);
+}
+
+.btn-secondary {
+  background: var(--glass); color: var(--text);
+  border: 1px solid var(--glass-border);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   搜索栏
+   ══════════════════════════════════════════════════════════════ */
+.search-bar {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px; border-radius: 24px;
+  background: var(--glass); border: 1px solid var(--glass-border);
+  margin-bottom: 20px; transition: border-color 0.3s;
+}
+
+.search-bar:focus-within { border-color: var(--primary); }
+.search-bar input { flex: 1; font-size: 14px; color: var(--text); }
+.search-bar input::placeholder { color: var(--text-muted); }
+.search-bar .search-icon { font-size: 18px; color: var(--text-muted); }
+
+/* ══════════════════════════════════════════════════════════════
+   设置视图
+   ══════════════════════════════════════════════════════════════ */
+.settings-section {
+  margin-bottom: 24px;
+  padding: 20px; border-radius: var(--radius);
+  background: var(--bg-card); backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+}
+
+.settings-section h3 {
+  font-size: 15px; font-weight: 600; letter-spacing: 2px;
+  margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+}
+
+.preset-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+}
+
+.preset-item {
+  aspect-ratio: 1; border-radius: var(--radius-sm);
+  cursor: pointer; border: 3px solid transparent;
+  transition: all 0.3s ease; position: relative;
+}
+
+.preset-item:hover { transform: scale(1.05); }
+.preset-item.selected { border-color: #fff; box-shadow: 0 0 20px rgba(255,255,255,0.3); }
+.preset-item.selected::after {
+  content: '✓'; position: absolute; top: 4px; right: 8px;
+  color: #fff; font-size: 16px; font-weight: 700;
+  text-shadow: 0 0 8px rgba(0,0,0,0.5);
+}
+
+.custom-bg-preview {
+  width: 100%; height: 100px; border-radius: var(--radius-sm);
+  background-size: cover; background-position: center; margin-bottom: 10px;
+}
+
+.settings-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 0; border-bottom: 1px solid var(--glass-border);
+}
+
+.settings-row:last-child { border-bottom: none; }
+.settings-row .row-label { font-size: 14px; color: var(--text); }
+.settings-row .row-value { font-size: 13px; color: var(--text-secondary); }
+
+input[type="range"] {
+  -webkit-appearance: none; width: 120px; height: 6px;
+  border-radius: 3px; background: var(--glass-border); outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 22px; height: 22px;
+  border-radius: 50%; background: var(--primary);
+  cursor: pointer; box-shadow: 0 0 10px rgba(255,107,129,0.4);
+}
+
+/* 主题选择器 */
+.theme-options {
+  display: flex; gap: 10px;
+}
+
+.theme-dot {
+  width: 32px; height: 32px; border-radius: 50%;
+  cursor: pointer; border: 3px solid transparent; transition: all 0.3s;
+}
+
+.theme-dot:hover { transform: scale(1.15); }
+.theme-dot.selected { border-color: #fff; box-shadow: 0 0 14px currentColor; }
+
+/* ══════════════════════════════════════════════════════════════
+   详情弹窗
+   ══════════════════════════════════════════════════════════════ */
+.modal-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  z-index: 200;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(8px);
+  display: flex; align-items: center; justify-content: center;
+  animation: fadeIn 0.25s ease;
+  padding: 20px;
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.modal-content {
+  background: rgba(20,20,35,0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  max-width: 600px; width: 100%; max-height: 85vh;
+  overflow-y: auto; padding: 24px;
+  box-shadow: var(--shadow-lg);
+  animation: modalIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.9) translateY(30px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.modal-close {
+  position: sticky; top: 0; float: right;
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--glass); border: 1px solid var(--glass-border);
+  font-size: 18px; display: flex; align-items: center; justify-content: center;
+  color: var(--text); z-index: 1; transition: all 0.2s;
+}
+
+.modal-close:hover { background: rgba(255,71,87,0.2); border-color: #ff4757; }
+
+.modal-img {
+  width: 100%; border-radius: var(--radius-sm); margin-bottom: 16px;
+  max-height: 50vh; object-fit: contain; background: var(--glass);
+}
+
+.modal-date { font-size: 12px; color: var(--primary); letter-spacing: 2px; margin-bottom: 8px; }
+.modal-title { font-size: 20px; font-weight: 700; margin-bottom: 12px; }
+.modal-body { font-size: 15px; color: var(--text-secondary); line-height: 1.8; white-space: pre-wrap; }
+.modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+
+/* ══════════════════════════════════════════════════════════════
+   Toast通知
+   ══════════════════════════════════════════════════════════════ */
+.toast-container {
+  position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
+  z-index: 300; display: flex; flex-direction: column-reverse; gap: 8px;
+}
+
+.toast {
+  padding: 12px 24px; border-radius: 24px;
+  font-size: 13px; font-weight: 600; letter-spacing: 1px;
+  white-space: nowrap;
+  animation: toastIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: var(--shadow);
+}
+
+.toast.success { background: #2ed573; color: #fff; }
+.toast.error { background: #ff4757; color: #fff; }
+.toast.info { background: var(--primary); color: #fff; }
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.8); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   浮动音乐按钮
+   ══════════════════════════════════════════════════════════════ */
+.music-fab {
+  position: fixed; top: 20px; right: 20px;
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--glass); backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  font-size: 20px; display: flex; align-items: center; justify-content: center;
+  z-index: 90; transition: all 0.3s ease;
+  box-shadow: var(--shadow);
+}
+
+.music-fab:hover { background: var(--bg-card-hover); }
+.music-fab.playing { background: var(--primary); border-color: var(--primary); color: #fff; box-shadow: 0 0 20px rgba(255,107,129,0.5); }
+
+/* ══════════════════════════════════════════════════════════════
+   爱心爆发动画 (CSS)
+   ══════════════════════════════════════════════════════════════ */
+.heart-burst {
+  position: fixed; pointer-events: none; z-index: 250;
+  font-size: 24px; animation: burstOut 1s ease-out forwards;
+}
+
+@keyframes burstOut {
+  0% { opacity: 1; transform: translate(0, 0) scale(1) rotate(0deg); }
+  100% { opacity: 0; transform: translate(var(--bx), var(--by)) scale(0) rotate(var(--br)); }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   响应式 - 桌面端适配
+   ══════════════════════════════════════════════════════════════ */
+@media (min-width: 768px) {
+  .tab-bar {
+    top: 0; bottom: 0; left: 0; right: auto;
+    width: 72px; height: 100%;
+    flex-direction: column; justify-content: center; gap: 16px;
+    border-top: none; border-right: 1px solid var(--glass-border);
+  }
+
+  .view { padding-left: 96px; padding-right: 32px; padding-top: 32px; }
+
+  .anniversary-banner { max-width: 500px; margin-left: auto; margin-right: auto; }
+
+  .memory-card { max-width: 560px; }
+
+  .preset-grid { grid-template-columns: repeat(8, 1fr); }
+
+  .modal-content { padding: 32px; }
+
+  .lock-card { padding: 48px 40px; }
+}
+
+@media (min-width: 1024px) {
+  .memory-card { max-width: 600px; }
+  .view { max-width: 720px; margin: 0 auto; padding-left: 120px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════════
+   背景覆盖层
+   ════════════════════════════════════════════════════════════ -->
+<div class="bg-overlay"></div>
+
+<!-- ════════════════════════════════════════════════════════════
+   Canvas 爱心动画
+   ════════════════════════════════════════════════════════════ -->
+<canvas id="heartsCanvas"></canvas>
+
+<!-- ════════════════════════════════════════════════════════════
+   密码锁屏
+   ════════════════════════════════════════════════════════════ -->
+<div id="lockScreen" class="lock-screen">
+  <div class="lock-card">
+    <div class="lock-icon">💕</div>
+    <div class="lock-title" id="lockTitle">Love Memory</div>
+    <div class="lock-subtitle" id="lockSubtitle">输入密码解锁你的回忆</div>
+    <div class="pin-display" id="pinDisplay">
+      <div class="pin-dot"></div><div class="pin-dot"></div>
+      <div class="pin-dot"></div><div class="pin-dot"></div>
+      <div class="pin-dot"></div><div class="pin-dot"></div>
+    </div>
+    <div class="keypad" id="keypad">
+      <button data-key="1">1</button><button data-key="2">2</button><button data-key="3">3</button>
+      <button data-key="4">4</button><button data-key="5">5</button><button data-key="6">6</button>
+      <button data-key="7">7</button><button data-key="8">8</button><button data-key="9">9</button>
+      <button class="key-clear" data-key="clear">清除</button>
+      <button data-key="0">0</button>
+      <button class="key-ok" data-key="ok">确定</button>
+    </div>
+    <div class="lock-error" id="lockError"></div>
+    <div class="lock-footer">
+      <a id="forgotLink" style="display:none" onclick="resetApp()">忘记密码？(将清空所有数据)</a>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+   应用主容器
+   ════════════════════════════════════════════════════════════ -->
+<div id="appContainer" class="app-container" style="display:none">
+
+  <!-- 视图1: 时光轴 -->
+  <div id="viewTimeline" class="view active">
+    <div id="anniversaryBanner" class="anniversary-banner" style="display:none">
+      <div class="days-count" id="daysCount">0</div>
+      <div class="days-label">天 在 一 起</div>
+      <div class="next-milestone" id="nextMilestone"></div>
+    </div>
+    <div id="timelineContainer" class="timeline">
+      <div class="empty-state" id="timelineEmpty">
+        <div class="empty-icon">📸</div>
+        <div class="empty-text">还没有回忆</div>
+        <div class="empty-hint">点击下方 + 添加你们的第一个瞬间</div>
+      </div>
+    </div>
+    <div id="loadMoreSentinel" style="height:20px"></div>
+  </div>
+
+  <!-- 视图2: 添加记忆 -->
+  <div id="viewAddMemory" class="view">
+    <div class="add-header">
+      <h2>✨ 记录美好瞬间</h2>
+      <div class="segment-control">
+        <button class="segment-btn active" data-mode="photo">📷 照片</button>
+        <button class="segment-btn" data-mode="journal">📝 日记</button>
+      </div>
+    </div>
+
+    <div id="photoMode">
+      <div class="upload-zone" id="uploadZone">
+        <div class="upload-icon">📷</div>
+        <div class="upload-text">点击或拖拽上传照片</div>
+        <div class="upload-hint">支持 JPG / PNG / WebP</div>
+      </div>
+      <input type="file" id="photoInput" accept="image/*">
+      <img id="photoPreview" class="preview-img" style="display:none" alt="预览">
+    </div>
+
+    <div id="journalMode" style="display:none">
+      <div class="form-group">
+        <textarea class="form-textarea" id="journalContent" placeholder="写下你想对Ta说的话...&#10;&#10;今天我们一起去了哪里，做了什么有趣的事，你的心情是怎样的..."></textarea>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">📅 日期</label>
+      <input type="date" class="form-input" id="memoryDate">
+    </div>
+    <div class="form-group">
+      <label class="form-label">💬 标题</label>
+      <input type="text" class="form-input" id="memoryTitle" placeholder="给这个回忆起个名字..." maxlength="200">
+    </div>
+    <button class="btn btn-primary" id="saveMemoryBtn" onclick="saveMemory()">
+      💾 保存回忆
+    </button>
+  </div>
+
+  <!-- 视图3: 日记 -->
+  <div id="viewJournal" class="view">
+    <div class="search-bar">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="journalSearch" placeholder="搜索日记内容..." oninput="filterJournals()">
+    </div>
+    <div id="journalContainer">
+      <div class="empty-state" id="journalEmpty">
+        <div class="empty-icon">📖</div>
+        <div class="empty-text">还没有日记</div>
+        <div class="empty-hint">去添加页写下你的第一篇恋爱日记吧</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 视图4: 设置 -->
+  <div id="viewSettings" class="view">
+    <!-- 纪念日 -->
+    <div class="settings-section">
+      <h3>💝 纪念日</h3>
+      <div class="form-group">
+        <label class="form-label">你们在一起的第一天</label>
+        <input type="date" class="form-input" id="anniversaryInput" onchange="updateAnniversary()">
+      </div>
+      <div id="settingsAnniversaryInfo" style="font-size:13px;color:var(--text-secondary)"></div>
+    </div>
+
+    <!-- 背景 -->
+    <div class="settings-section">
+      <h3>🎨 背景主题</h3>
+      <div class="preset-grid" id="presetGrid"></div>
+      <button class="btn btn-secondary" style="margin-top:12px" onclick="document.getElementById('bgUploadInput').click()">
+        📁 上传自定义背景
+      </button>
+      <input type="file" id="bgUploadInput" accept="image/*" onchange="handleBgUpload(this)">
+      <button class="btn btn-secondary" style="margin-top:8px" id="resetBgBtn" onclick="resetBackground()" disabled>
+        🔄 恢复默认背景
+      </button>
+    </div>
+
+    <!-- 主题颜色 -->
+    <div class="settings-section">
+      <h3>🌈 配色方案</h3>
+      <div class="theme-options">
+        <div class="theme-dot" data-theme-val="" style="background:#ff6b81;color:#ff6b81" onclick="setTheme('')" title="暖粉"></div>
+        <div class="theme-dot" data-theme-val="blush" style="background:#f8a4c8;color:#f8a4c8" onclick="setTheme('blush')" title="腮红"></div>
+        <div class="theme-dot" data-theme-val="lavender" style="background:#b8a9c9;color:#b8a9c9" onclick="setTheme('lavender')" title="薰衣草"></div>
+        <div class="theme-dot" data-theme-val="sunset" style="background:#ff9a76;color:#ff9a76" onclick="setTheme('sunset')" title="日落"></div>
+      </div>
+    </div>
+
+    <!-- 音乐 -->
+    <div class="settings-section">
+      <h3>🎵 背景音乐</h3>
+      <button class="btn btn-secondary" onclick="document.getElementById('musicInput').click()">
+        🎶 上传你们的歌
+      </button>
+      <input type="file" id="musicInput" accept="audio/*" onchange="handleMusicUpload(this)">
+      <div class="settings-row" style="margin-top:12px">
+        <span class="row-label">当前音乐</span>
+        <span class="row-value" id="musicName">未上传</span>
+      </div>
+      <div class="settings-row">
+        <span class="row-label">音量</span>
+        <input type="range" min="0" max="100" value="50" oninput="setVolume(this.value)" id="volumeSlider">
+      </div>
+      <div class="settings-row">
+        <span class="row-label">循环播放</span>
+        <input type="checkbox" id="loopCheckbox" checked onchange="toggleLoop(this.checked)" style="accent-color:var(--primary)">
+      </div>
+      <button class="btn btn-primary" style="margin-top:12px" onclick="toggleMusic()" id="musicToggleBtn">
+        ▶️ 播放音乐
+      </button>
+    </div>
+
+    <!-- 密码 -->
+    <div class="settings-section">
+      <h3>🔒 修改密码</h3>
+      <div class="form-group">
+        <label class="form-label">新密码 (6位数字)</label>
+        <input type="password" class="form-input" id="newPasswordInput" maxlength="6" placeholder="输入新密码" inputmode="numeric" pattern="[0-9]*">
+      </div>
+      <button class="btn btn-secondary" onclick="changePassword()">更新密码</button>
+    </div>
+
+    <!-- 数据管理 -->
+    <div class="settings-section">
+      <h3>💾 数据管理</h3>
+      <button class="btn btn-secondary" style="margin-bottom:8px" onclick="exportData()">
+        📥 导出所有照片
+      </button>
+      <button class="btn btn-danger" onclick="deleteAllData()">
+        🗑️ 删除所有数据
+      </button>
+    </div>
+
+    <div style="text-align:center;padding:20px;color:var(--text-muted);font-size:11px;letter-spacing:2px">
+      💕 Made with Love · 属于你们的私密空间
+    </div>
+  </div>
+
+  <!-- 详情弹窗 -->
+  <div id="detailModal" class="modal-overlay" style="display:none" onclick="closeDetail(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="closeDetail()">✕</button>
+      <img id="modalImg" class="modal-img" style="display:none" alt="">
+      <div class="modal-date" id="modalDate"></div>
+      <div class="modal-title" id="modalTitle"></div>
+      <div class="modal-body" id="modalBody"></div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="modalEditBtn" onclick="editMemory()">✏️ 编辑</button>
+        <button class="btn btn-danger" id="modalDeleteBtn" onclick="deleteMemory()">🗑️ 删除</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast容器 -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- 浮动音乐按钮 -->
+  <button class="music-fab" id="musicFAB" style="display:none" onclick="toggleMusic()" title="播放/暂停音乐">🎵</button>
+
+  <!-- Tab导航栏 -->
+  <nav class="tab-bar" id="tabBar">
+    <button class="tab-btn active" data-view="viewTimeline">
+      <span class="tab-icon">🏠</span>时光轴
+    </button>
+    <button class="tab-btn" data-view="viewAddMemory">
+      <span class="tab-icon">➕</span>添加
+    </button>
+    <button class="tab-btn" data-view="viewJournal">
+      <span class="tab-icon">📖</span>日记
+    </button>
+    <button class="tab-btn" data-view="viewSettings">
+      <span class="tab-icon">⚙️</span>设置
+    </button>
+  </nav>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+   隐藏的音频元素
+   ════════════════════════════════════════════════════════════ -->
+<audio id="bgmAudio" loop preload="auto" style="display:none"></audio>
+
+<script>
+(function() {
+'use strict';
+
+// ══════════════════════════════════════════════════════════════
+// 1. 常量 & 配置
+// ══════════════════════════════════════════════════════════════
+const DB_NAME = 'LoveMemoryDB';
+const DB_VERSION = 1;
+const THUMBNAIL_MAX = 300;
+const FULL_IMG_MAX = 1920;
+const ITEMS_PER_PAGE = 20;
+const PIN_LENGTH = 6;
+
+const PRESETS = {
+  'gradient-rose':    'radial-gradient(ellipse at 30% 20%, #3a1020 0%, #1a0510 50%, #0a0a12 100%)',
+  'velvet-night':     'radial-gradient(ellipse at 70% 30%, #2c003e 0%, #150020 40%, #0a0a12 100%)',
+  'blush-petals':     'radial-gradient(ellipse at 50% 0%, #2d1520 0%, #1a0a14 45%, #0a0a12 100%)',
+  'starry-sky':       'radial-gradient(ellipse at 20% 80%, #0f0c29 0%, #1a1040 30%, #0a0a12 100%)',
+  'golden-hour':      'radial-gradient(ellipse at 80% 20%, #2d1a08 0%, #1a0f05 40%, #0a0a12 100%)',
+  'cherry-blossom':   'radial-gradient(ellipse at 50% 10%, #301520 0%, #1a0d15 35%, #0a0a12 100%)',
+  'lavender-dream':   'radial-gradient(ellipse at 60% 30%, #1a1028 0%, #110d1f 40%, #0a0a12 100%)',
+  'sunset-kiss':      'radial-gradient(ellipse at 40% 70%, #2a1008 0%, #180a06 35%, #0a0a12 100%)',
+};
+
+// ══════════════════════════════════════════════════════════════
+// 2. DOM引用
+// ══════════════════════════════════════════════════════════════
+const $ = (sel) => document.querySelector(sel);
+const $$ = (sel) => document.querySelectorAll(sel);
+
+const lockScreen = $('#lockScreen');
+const lockTitle = $('#lockTitle');
+const lockSubtitle = $('#lockSubtitle');
+const pinDisplay = $('#pinDisplay');
+const lockError = $('#lockError');
+const forgotLink = $('#forgotLink');
+const appContainer = $('#appContainer');
+const heartsCanvas = $('#heartsCanvas');
+const heartsCtx = heartsCanvas.getContext('2d');
+const bgmAudio = $('#bgmAudio');
+const musicFAB = $('#musicFAB');
+
+// ══════════════════════════════════════════════════════════════
+// 3. 工具函数
+// ══════════════════════════════════════════════════════════════
+function formatDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  const weekdays = ['日','一','二','三','四','五','六'];
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  const w = weekdays[d.getDay()];
+  return `${y}年${m}月${day}日 星期${w}`;
+}
+
+function formatDateShort(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function daysBetween(d1, d2) {
+  return Math.floor((new Date(d2) - new Date(d1)) / (1000 * 60 * 60 * 24));
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function showToast(msg, type='info') {
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.textContent = msg;
+  $('#toastContainer').appendChild(toast);
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateY(-10px)';
+    toast.style.transition = 'all 0.3s ease';
+    setTimeout(() => toast.remove(), 300);
+  }, 2200);
+}
+
+function heartBurst(x, y) {
+  for (let i = 0; i < 8; i++) {
+    const heart = document.createElement('div');
+    heart.className = 'heart-burst';
+    heart.textContent = ['💕','💖','💗','💝','✨','💫','❤️','💘'][i];
+    heart.style.left = x + 'px';
+    heart.style.top = y + 'px';
+    const angle = (Math.PI * 2 * i) / 8;
+    const dist = 40 + Math.random() * 60;
+    heart.style.setProperty('--bx', Math.cos(angle) * dist + 'px');
+    heart.style.setProperty('--by', Math.sin(angle) * dist - 30 + 'px');
+    heart.style.setProperty('--br', (Math.random()-0.5)*360 + 'deg');
+    document.body.appendChild(heart);
+    setTimeout(() => heart.remove(), 1000);
+  }
+}
+
+async function hashPin(pin) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(pin);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+// ══════════════════════════════════════════════════════════════
+// 4. IndexedDB
+// ══════════════════════════════════════════════════════════════
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = (e) => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains('memories')) {
+        const store = db.createObjectStore('memories', { keyPath: 'id', autoIncrement: true });
+        store.createIndex('byDate', 'date', { unique: false });
+        store.createIndex('byType', 'type', { unique: false });
+      }
+      if (!db.objectStoreNames.contains('assets')) {
+        db.createObjectStore('assets', { keyPath: 'key' });
+      }
+    };
+    req.onsuccess = (e) => resolve(e.target.result);
+    req.onerror = (e) => reject(e.target.error);
+  });
+}
+
+function dbAdd(storeName, data) {
+  return openDB().then(db => {
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(storeName, 'readwrite');
+      const store = tx.objectStore(storeName);
+      const req = store.add(data);
+      req.onsuccess = (e) => resolve(e.target.result);
+      req.onerror = (e) => reject(e.target.error);
+      tx.oncomplete = () => db.close();
+    });
+  });
+}
+
+function dbPut(storeName, data) {
+  return openDB().then(db => {
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(storeName, 'readwrite');
+      const store = tx.objectStore(storeName);
+      const req = store.put(data);
+      req.onsuccess = (e) => resolve(e.target.result);
+      req.onerror = (e) => reject(e.target.error);
+      tx.oncomplete = () => db.close();
+    });
+  });
+}
+
+function dbGetAll(storeName, indexName, direction='prev') {
+  return openDB().then(db => {
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(storeName, 'readonly');
+      const store = tx.objectStore(storeName);
+      const results = [];
+      let cursorReq;
+      if (indexName) {
+        cursorReq = store.index(indexName).openCursor(null, direction);
+      } else {
+        cursorReq = store.openCursor(null, direction);
+      }
+      cursorReq.onsuccess = (e) => {
+        const cursor = e.target.result;
+        if (cursor) {
+          results.push(cursor.value);
+          cursor.continue();
+        } else {
+          resolve(results);
+        }
+      };
+      cursorReq.onerror = (e) => reject(e.target.error);
+      tx.oncomplete = () => db.close();
+    });
+  });
+}
+
+function dbGet(storeName, key) {
+  return openDB().then(db => {
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(storeName, 'readonly');
+      const req = tx.objectStore(storeName).get(key);
+      req.onsuccess = (e) => resolve(e.target.result);
+      req.onerror = (e) => reject(e.target.error);
+      tx.oncomplete = () => db.close();
+    });
+  });
+}
+
+function dbDelete(storeName, key) {
+  return openDB().then(db => {
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(storeName, 'readwrite');
+      const req = tx.objectStore(storeName).delete(key);
+      req.onsuccess = () => resolve();
+      req.onerror = (e) => reject(e.target.error);
+      tx.oncomplete = () => db.close();
+    });
+  });
+}
+
+function dbClear(storeName) {
+  return openDB().then(db => {
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(storeName, 'readwrite');
+      const req = tx.objectStore(storeName).clear();
+      req.onsuccess = () => resolve();
+      req.onerror = (e) => reject(e.target.error);
+      tx.oncomplete = () => db.close();
+    });
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+// 5. 图片处理
+// ══════════════════════════════════════════════════════════════
+function resizeImage(file, maxDim, quality = 0.7) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        if (w > maxDim || h > maxDim) {
+          const ratio = Math.min(maxDim / w, maxDim / h);
+          w = Math.round(w * ratio);
+          h = Math.round(h * ratio);
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        canvas.toBlob((blob) => {
+          resolve(blob);
+        }, 'image/jpeg', quality);
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+let pendingPhotoFile = null;
+let pendingPhotoBlob = null;
+let pendingThumbBlob = null;
+
+async function handlePhotoSelect(file) {
+  pendingPhotoFile = file;
+  try {
+    // 生成缩略图和压缩原图
+    [pendingThumbBlob, pendingPhotoBlob] = await Promise.all([
+      resizeImage(file, THUMBNAIL_MAX, 0.6),
+      resizeImage(file, FULL_IMG_MAX, 0.85)
+    ]);
+    // 显示预览
+    const url = URL.createObjectURL(pendingPhotoBlob);
+    const preview = $('#photoPreview');
+    preview.src = url;
+    preview.style.display = 'block';
+    $('#uploadZone').style.display = 'none';
+  } catch (err) {
+    showToast('图片处理失败，请重试', 'error');
+    console.error(err);
+  }
+}
+
+function resetPhotoUpload() {
+  pendingPhotoFile = null;
+  pendingPhotoBlob = null;
+  pendingThumbBlob = null;
+  $('#photoPreview').style.display = 'none';
+  $('#photoPreview').src = '';
+  $('#uploadZone').style.display = '';
+  $('#photoInput').value = '';
+}
+
+// ══════════════════════════════════════════════════════════════
+// 6. 密码模块
+// ══════════════════════════════════════════════════════════════
+let pinInput = '';
+let isSettingPassword = false;
+let pinConfirm = '';
+let failedAttempts = 0;
+let cooldownUntil = null;
+let currentDetailId = null;
+
+function updatePinDots() {
+  const dots = $$('.pin-dot');
+  dots.forEach((d, i) => {
+    d.classList.toggle('filled', i < pinInput.length);
+    d.classList.remove('error');
+  });
+}
+
+function clearPin() {
+  pinInput = '';
+  updatePinDots();
+  lockError.textContent = '';
+  $$('.pin-dot').forEach(d => d.classList.remove('error'));
+}
+
+async function submitPin() {
+  if (pinInput.length !== PIN_LENGTH) {
+    lockError.textContent = `请输入 ${PIN_LENGTH} 位密码`;
+    return;
+  }
+
+  // 冷却检查
+  if (cooldownUntil && Date.now() < cooldownUntil) {
+    const sec = Math.ceil((cooldownUntil - Date.now())/1000);
+    lockError.textContent = `请等待 ${sec} 秒后再试`;
+    return;
+  }
+
+  const hash = await hashPin(pinInput);
+
+  if (isSettingPassword) {
+    if (!pinConfirm) {
+      pinConfirm = hash;
+      pinInput = '';
+      updatePinDots();
+      lockSubtitle.textContent = '请再次输入密码确认';
+      lockTitle.textContent = '确认密码';
+      return;
+    }
+    if (hash === pinConfirm) {
+      localStorage.setItem('passwordHash', hash);
+      isSettingPassword = false;
+      pinConfirm = '';
+      showToast('密码设置成功！💕', 'success');
+      unlockApp();
+    } else {
+      lockError.textContent = '两次密码不一致，请重新设置';
+      pinConfirm = '';
+      pinInput = '';
+      updatePinDots();
+      lockSubtitle.textContent = '设置一个6位数字密码来保护你们的回忆';
+      lockTitle.textContent = '设置密码';
+    }
+    return;
+  }
+
+  const storedHash = localStorage.getItem('passwordHash');
+  if (hash === storedHash) {
+    failedAttempts = 0;
+    unlockApp();
+  } else {
+    failedAttempts++;
+    pinInput = '';
+    updatePinDots();
+    $$('.pin-dot').forEach(d => d.classList.add('error'));
+    setTimeout(() => $$('.pin-dot').forEach(d => d.classList.remove('error')), 600);
+    lockError.textContent = `密码错误 (${failedAttempts}/5)`;
+    if (failedAttempts >= 5) {
+      cooldownUntil = Date.now() + 30000;
+      lockError.textContent = '错误次数过多，请等待30秒';
+      setTimeout(() => { lockError.textContent = ''; }, 30000);
+    }
+  }
+}
+
+function unlockApp() {
+  lockScreen.classList.add('hidden');
+  appContainer.style.display = 'flex';
+  forgotLink.style.display = 'none';
+  pinInput = '';
+  updatePinDots();
+  // 触发用户交互以允许音频播放
+  document.body.addEventListener('click', tryAutoPlayMusic, { once: true });
+  document.body.addEventListener('touchend', tryAutoPlayMusic, { once: true });
+  loadTimeline();
+  updateAnniversaryBanner();
+  initHeartsCanvas();
+}
+
+function tryAutoPlayMusic() {
+  const enabled = localStorage.getItem('bgmEnabled') === 'true';
+  if (enabled && bgmAudio.src && bgmAudio.src !== window.location.href) {
+    bgmAudio.play().catch(() => {});
+  }
+}
+
+function resetApp() {
+  if (confirm('确定要重置吗？这将删除所有数据，包括照片、日记和设置。')) {
+    if (confirm('真的确定吗？此操作不可撤销！')) {
+      if (confirm('最后一次确认：删除所有数据？')) {
+        indexedDB.deleteDatabase(DB_NAME).then(() => {
+          localStorage.clear();
+          location.reload();
+        });
+      }
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// 7. 照片上传事件
+// ══════════════════════════════════════════════════════════════
+const uploadZone = $('#uploadZone');
+const photoInput = $('#photoInput');
+
+uploadZone.addEventListener('click', () => photoInput.click());
+photoInput.addEventListener('change', (e) => {
+  if (e.target.files[0]) handlePhotoSelect(e.target.files[0]);
+});
+
+uploadZone.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  uploadZone.classList.add('drag-over');
+});
+uploadZone.addEventListener('dragleave', () => {
+  uploadZone.classList.remove('drag-over');
+});
+uploadZone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  uploadZone.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) {
+    handlePhotoSelect(file);
+  }
+});
+
+// ══════════════════════════════════════════════════════════════
+// 8. 保存记忆
+// ══════════════════════════════════════════════════════════════
+let currentMode = 'photo';
+let editingMemoryId = null;
+
+async function saveMemory() {
+  const date = $('#memoryDate').value;
+  const title = $('#memoryTitle').value.trim();
+  const saveBtn = $('#saveMemoryBtn');
+
+  if (!date) { showToast('请选择日期 📅', 'error'); return; }
+  if (!title) { showToast('请输入标题 💬', 'error'); return; }
+
+  saveBtn.disabled = true;
+  saveBtn.textContent = '⏳ 保存中...';
+
+  try {
+    if (currentMode === 'photo') {
+      if (editingMemoryId) {
+        // 编辑已有照片记忆
+        const mem = await dbGet('memories', editingMemoryId);
+        mem.date = date;
+        mem.title = title;
+        await dbPut('memories', mem);
+      } else {
+        if (!pendingPhotoBlob) { showToast('请选择一张照片 📷', 'error'); saveBtn.disabled = false; saveBtn.textContent = '💾 保存回忆'; return; }
+        await dbAdd('memories', {
+          type: 'photo',
+          date: date,
+          title: title,
+          content: '',
+          thumbnail: pendingThumbBlob,
+          fullImage: pendingPhotoBlob,
+          imageFileName: pendingPhotoFile ? pendingPhotoFile.name : 'photo.jpg',
+          createdAt: new Date().toISOString()
+        });
+      }
+      resetPhotoUpload();
+    } else {
+      const content = $('#journalContent').value.trim();
+      if (!content) { showToast('请写下日记内容 📝', 'error'); saveBtn.disabled = false; saveBtn.textContent = '💾 保存回忆'; return; }
+      if (editingMemoryId) {
+        const mem = await dbGet('memories', editingMemoryId);
+        mem.date = date;
+        mem.title = title;
+        mem.content = content;
+        await dbPut('memories', mem);
+      } else {
+        await dbAdd('memories', {
+          type: 'journal',
+          date: date,
+          title: title,
+          content: content,
+          thumbnail: null,
+          fullImage: null,
+          createdAt: new Date().toISOString()
+        });
+      }
+      $('#journalContent').value = '';
+    }
+
+    editingMemoryId = null;
+    $('#memoryTitle').value = '';
+    heartBurst(window.innerWidth/2, window.innerHeight/2);
+    showToast('回忆保存成功！💕', 'success');
+    saveBtn.textContent = '💾 保存回忆';
+
+    // 刷新
+    loadTimeline();
+    loadJournals();
+  } catch (err) {
+    if (err.name === 'QuotaExceededError') {
+      showToast('存储空间不足，请删除一些旧照片', 'error');
+    } else {
+      showToast('保存失败：' + err.message, 'error');
+    }
+    console.error(err);
+    saveBtn.textContent = '💾 保存回忆';
+  }
+  saveBtn.disabled = false;
+}
+
+// ══════════════════════════════════════════════════════════════
+// 9. 时间轴渲染
+// ══════════════════════════════════════════════════════════════
+let allMemories = [];
+let displayedCount = 0;
+
+async function loadTimeline() {
+  try {
+    allMemories = await dbGetAll('memories', 'byDate', 'prev');
+    displayedCount = 0;
+    renderTimelineBatch();
+  } catch (err) {
+    console.error('加载时间轴失败:', err);
+  }
+}
+
+function renderTimelineBatch() {
+  const container = $('#timelineContainer');
+  const empty = $('#timelineEmpty');
+
+  if (allMemories.length === 0) {
+    empty.style.display = '';
+    return;
+  }
+  empty.style.display = 'none';
+
+  const batch = allMemories.slice(displayedCount, displayedCount + ITEMS_PER_PAGE);
+  batch.forEach((mem, i) => {
+    const card = createMemoryCard(mem, displayedCount + i);
+    container.appendChild(card);
+  });
+  displayedCount += batch.length;
+}
+
+function createMemoryCard(mem, index) {
+  const card = document.createElement('div');
+  card.className = 'memory-card';
+  card.style.animationDelay = (Math.min(index, 10) * 0.05) + 's';
+  card.onclick = () => showDetail(mem);
+
+  const typeLabel = mem.type === 'photo' ? '📷 照片' : '📝 日记';
+  let inner = `
+    <div class="card-date">
+      <span class="card-type-badge">${typeLabel}</span>
+      ${formatDate(mem.date)}
+    </div>`;
+
+  if (mem.type === 'photo' && mem.thumbnail) {
+    const url = URL.createObjectURL(mem.thumbnail);
+    card._thumbUrl = url;
+    inner += `<img class="card-thumb" src="${url}" alt="" loading="lazy">`;
+  } else if (mem.type === 'journal') {
+    inner += `<div style="font-size:32px;margin-bottom:8px">💌</div>`;
+  }
+
+  inner += `
+    <div class="card-title">${escapeHtml(mem.title)}</div>
+    <div class="card-preview">${escapeHtml(mem.content || '')}</div>`;
+
+  card.innerHTML = inner;
+  return card;
+}
+
+function showDetail(mem) {
+  currentDetailId = mem.id;
+  $('#modalImg').style.display = 'none';
+  $('#modalBody').textContent = '';
+
+  if (mem.type === 'photo' && mem.fullImage) {
+    const url = URL.createObjectURL(mem.fullImage);
+    $('#modalImg').src = url;
+    $('#modalImg').style.display = '';
+    $('#modalImg')._imgUrl = url;
+  }
+
+  $('#modalDate').textContent = formatDate(mem.date);
+  $('#modalTitle').textContent = mem.title;
+  if (mem.content) {
+    $('#modalBody').textContent = mem.content;
+  }
+  $('#modalEditBtn').onclick = () => editMemory(mem);
+  $('#modalDeleteBtn').onclick = () => deleteMemory(mem.id);
+  $('#detailModal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDetail(e) {
+  if (e && e.target !== e.currentTarget) return;
+  $('#detailModal').style.display = 'none';
+  document.body.style.overflow = '';
+  // 清理URL
+  if ($('#modalImg')._imgUrl) {
+    URL.revokeObjectURL($('#modalImg')._imgUrl);
+    $('#modalImg')._imgUrl = null;
+  }
+  currentDetailId = null;
+}
+
+async function deleteMemory(id) {
+  if (!confirm('确定要删除这条回忆吗？')) return;
+  try {
+    await dbDelete('memories', id || currentDetailId);
+    showToast('回忆已删除', 'info');
+    closeDetail();
+    refreshAll();
+  } catch (err) {
+    showToast('删除失败', 'error');
+  }
+}
+
+function editMemory(mem) {
+  closeDetail();
+  switchView('viewAddMemory');
+  editingMemoryId = mem ? mem.id : currentDetailId;
+  const targetMem = mem || allMemories.find(m => m.id === currentDetailId);
+  if (!targetMem) return;
+
+  if (targetMem.type === 'photo') {
+    setMode('photo');
+    resetPhotoUpload();
+  } else {
+    setMode('journal');
+    $('#journalContent').value = targetMem.content || '';
+  }
+  $('#memoryDate').value = targetMem.date || '';
+  $('#memoryTitle').value = targetMem.title || '';
+  $('#saveMemoryBtn').textContent = '✏️ 更新回忆';
+}
+
+// ══════════════════════════════════════════════════════════════
+// 10. 日记视图
+// ══════════════════════════════════════════════════════════════
+async function loadJournals() {
+  const journals = allMemories.filter(m => m.type === 'journal');
+  renderJournalList(journals);
+}
+
+function renderJournalList(journals) {
+  const container = $('#journalContainer');
+  const empty = $('#journalEmpty');
+  const searchTerm = ($('#journalSearch').value || '').toLowerCase();
+
+  const filtered = searchTerm
+    ? journals.filter(j =>
+        (j.title || '').toLowerCase().includes(searchTerm) ||
+        (j.content || '').toLowerCase().includes(searchTerm))
+    : journals;
+
+  container.innerHTML = '';
+  if (filtered.length === 0) {
+    empty.style.display = '';
+    return;
+  }
+  empty.style.display = 'none';
+
+  filtered.forEach((mem, i) => {
+    const card = createMemoryCard(mem, i);
+    container.appendChild(card);
+  });
+}
+
+function filterJournals() {
+  const journals = allMemories.filter(m => m.type === 'journal');
+  renderJournalList(journals);
+}
+
+// ══════════════════════════════════════════════════════════════
+// 11. 纪念日模块
+// ══════════════════════════════════════════════════════════════
+function updateAnniversary() {
+  const date = $('#anniversaryInput').value;
+  if (date) {
+    localStorage.setItem('anniversaryDate', date);
+  } else {
+    localStorage.removeItem('anniversaryDate');
+  }
+  updateAnniversaryBanner();
+  updateSettingsAnniversaryInfo();
+}
+
+function updateAnniversaryBanner() {
+  const dateStr = localStorage.getItem('anniversaryDate');
+  const banner = $('#anniversaryBanner');
+  if (!dateStr) {
+    banner.style.display = 'none';
+    return;
+  }
+  banner.style.display = '';
+  const days = daysBetween(dateStr, new Date().toISOString().split('T')[0]);
+  const countEl = $('#daysCount');
+  // 数字动画
+  animateNumber(countEl, days);
+
+  // 下一个里程碑
+  const startDate = new Date(dateStr);
+  const today = new Date();
+  let nextMilestone = null;
+  let milestoneLabel = '';
+  const milestones = [100, 200, 300, 365, 500, 666, 730, 888, 1000, 1314, 1500, 2000, 3000, 3650, 5000, 9999];
+  for (const m of milestones) {
+    const targetDate = new Date(startDate.getTime() + m * 86400000);
+    if (targetDate > today) {
+      nextMilestone = targetDate;
+      milestoneLabel = m + '天';
+      break;
+    }
+  }
+  if (nextMilestone) {
+    const remaining = daysBetween(today.toISOString().split('T')[0], nextMilestone.toISOString().split('T')[0]);
+    $('#nextMilestone').textContent = `🎯 距离 ${milestoneLabel} 纪念日还有 ${remaining} 天 (${formatDateShort(nextMilestone.toISOString().split('T')[0])})`;
+  } else {
+    $('#nextMilestone').textContent = '💕 每一个今天都是纪念日';
+  }
+}
+
+function updateSettingsAnniversaryInfo() {
+  const dateStr = localStorage.getItem('anniversaryDate');
+  const info = $('#settingsAnniversaryInfo');
+  if (dateStr) {
+    const days = daysBetween(dateStr, new Date().toISOString().split('T')[0]);
+    info.textContent = `💝 已经在一起 ${days} 天啦！`;
+  } else {
+    info.textContent = '';
+  }
+}
+
+function animateNumber(el, target) {
+  const start = parseInt(el.textContent) || 0;
+  if (start === target) { el.textContent = target; return; }
+  const duration = 800;
+  const startTime = performance.now();
+  function step(now) {
+    const progress = Math.min((now - startTime) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3); // ease-out
+    el.textContent = Math.round(start + (target - start) * eased);
+    if (progress < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+// ══════════════════════════════════════════════════════════════
+// 12. 背景模块
+// ══════════════════════════════════════════════════════════════
+function applyBackground() {
+  const bgType = localStorage.getItem('bgType') || 'preset';
+  if (bgType === 'custom') {
+    dbGet('assets', 'bgCustom').then(asset => {
+      if (asset && asset.value) {
+        const url = URL.createObjectURL(asset.value);
+        document.body.style.backgroundImage = `url(${url})`;
+        document.body._bgUrl = url;
+      } else {
+        applyPresetBg();
+      }
+    }).catch(() => applyPresetBg());
+  } else {
+    applyPresetBg();
+  }
+}
+
+function applyPresetBg() {
+  const presetId = localStorage.getItem('bgPresetId') || 'gradient-rose';
+  document.body.style.backgroundImage = PRESETS[presetId] || PRESETS['gradient-rose'];
+}
+
+function handleBgUpload(input) {
+  const file = input.files[0];
+  if (!file || !file.type.startsWith('image/')) return;
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const img = new Image();
+    img.onload = async () => {
+      let w = img.width, h = img.height;
+      if (w > 1920) { h = Math.round(h * 1920 / w); w = 1920; }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      const blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.8));
+      await dbPut('assets', { key: 'bgCustom', value: blob, updatedAt: new Date().toISOString() });
+      localStorage.setItem('bgType', 'custom');
+      applyBackground();
+      $('#resetBgBtn').disabled = false;
+      showToast('自定义背景已应用！🎨', 'success');
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function resetBackground() {
+  localStorage.setItem('bgType', 'preset');
+  applyBackground();
+  $('#resetBgBtn').disabled = true;
+  showToast('已恢复默认背景', 'info');
+}
+
+function renderPresetPicker() {
+  const grid = $('#presetGrid');
+  const currentPreset = localStorage.getItem('bgPresetId') || 'gradient-rose';
+  const bgType = localStorage.getItem('bgType') || 'preset';
+  grid.innerHTML = '';
+
+  Object.entries(PRESETS).forEach(([key, css]) => {
+    const item = document.createElement('div');
+    item.className = 'preset-item';
+    if (bgType === 'preset' && key === currentPreset) item.classList.add('selected');
+    item.style.background = css.replace('radial-gradient', 'linear-gradient').replace(/ellipse[^,]+,/g, '135deg,');
+    // 简化渐变展示
+    const colors = css.match(/#[0-9a-fA-F]{6}/g) || ['#ff6b81','#0a0a12'];
+    item.style.background = `linear-gradient(135deg, ${colors[0] || '#ff6b81'}, ${colors[1] || '#0a0a12'})`;
+    item.title = key;
+    item.onclick = () => {
+      localStorage.setItem('bgType', 'preset');
+      localStorage.setItem('bgPresetId', key);
+      $('#resetBgBtn').disabled = true;
+      applyBackground();
+      renderPresetPicker();
+      showToast('背景已切换 ✨', 'success');
+    };
+    grid.appendChild(item);
+  });
+
+  if (bgType === 'custom') $('#resetBgBtn').disabled = false;
+}
+
+// ══════════════════════════════════════════════════════════════
+// 13. 音乐模块
+// ══════════════════════════════════════════════════════════════
+async function handleMusicUpload(input) {
+  const file = input.files[0];
+  if (!file || !file.type.startsWith('audio/')) return;
+  try {
+    await dbPut('assets', { key: 'bgm', value: file, updatedAt: new Date().toISOString() });
+    localStorage.setItem('bgmFileName', file.name);
+    $('#musicName').textContent = file.name;
+    loadMusicFromDB();
+    showToast('音乐上传成功！🎵', 'success');
+  } catch (err) {
+    showToast('音乐上传失败', 'error');
+  }
+}
+
+async function loadMusicFromDB() {
+  try {
+    const asset = await dbGet('assets', 'bgm');
+    if (asset && asset.value) {
+      const url = URL.createObjectURL(asset.value);
+      if (bgmAudio._musicUrl) URL.revokeObjectURL(bgmAudio._musicUrl);
+      bgmAudio.src = url;
+      bgmAudio._musicUrl = url;
+      bgmAudio.volume = parseFloat(localStorage.getItem('bgmVolume') || '0.5');
+      bgmAudio.loop = localStorage.getItem('bgmLoop') !== 'false';
+      musicFAB.style.display = '';
+      $('#musicToggleBtn').style.display = '';
+      $('#musicName').textContent = localStorage.getItem('bgmFileName') || '已上传';
+      updateMusicUI();
+    }
+  } catch (err) {
+    // 没有音乐文件，正常
+  }
+}
+
+function toggleMusic() {
+  if (!bgmAudio.src || bgmAudio.src === window.location.href) {
+    showToast('请先上传音乐 🎶', 'info');
+    return;
+  }
+  if (bgmAudio.paused) {
+    bgmAudio.play().then(() => {
+      localStorage.setItem('bgmEnabled', 'true');
+      updateMusicUI();
+    }).catch(() => showToast('播放失败，请点击按钮播放', 'error'));
+  } else {
+    bgmAudio.pause();
+    localStorage.setItem('bgmEnabled', 'false');
+    updateMusicUI();
+  }
+}
+
+function updateMusicUI() {
+  const playing = !bgmAudio.paused;
+  musicFAB.classList.toggle('playing', playing);
+  musicFAB.textContent = playing ? '🎵' : '🎵';
+  $('#musicToggleBtn').textContent = playing ? '⏸️ 暂停音乐' : '▶️ 播放音乐';
+}
+
+function setVolume(val) {
+  const vol = val / 100;
+  bgmAudio.volume = vol;
+  localStorage.setItem('bgmVolume', String(vol));
+}
+
+function toggleLoop(checked) {
+  bgmAudio.loop = checked;
+  localStorage.setItem('bgmLoop', String(checked));
+}
+
+// ══════════════════════════════════════════════════════════════
+// 14. 主题切换
+// ══════════════════════════════════════════════════════════════
+function setTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem('theme', theme);
+  // 更新选中状态
+  $$('.theme-dot').forEach(d => {
+    d.classList.toggle('selected', d.dataset.themeVal === theme);
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+// 15. 密码修改
+// ══════════════════════════════════════════════════════════════
+async function changePassword() {
+  const newPin = $('#newPasswordInput').value.trim();
+  if (newPin.length !== PIN_LENGTH || !/^\d+$/.test(newPin)) {
+    showToast('请输入6位数字密码', 'error');
+    return;
+  }
+  const hash = await hashPin(newPin);
+  localStorage.setItem('passwordHash', hash);
+  $('#newPasswordInput').value = '';
+  showToast('密码已更新！🔒', 'success');
+}
+
+// ══════════════════════════════════════════════════════════════
+// 16. 数据导出/删除
+// ══════════════════════════════════════════════════════════════
+async function exportData() {
+  try {
+    const memories = await dbGetAll('memories', 'byDate', 'prev');
+    const photos = memories.filter(m => m.type === 'photo' && m.fullImage);
+    if (photos.length === 0) {
+      showToast('没有可导出的照片', 'info');
+      return;
+    }
+    showToast(`正在导出 ${photos.length} 张照片...`, 'info');
+    for (const mem of photos) {
+      const url = URL.createObjectURL(mem.fullImage);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${mem.date}_${mem.title || 'memory'}.jpg`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      await new Promise(r => setTimeout(r, 300)); // 间隔避免浏览器阻止
+    }
+    showToast('导出完成！📥', 'success');
+  } catch (err) {
+    showToast('导出失败', 'error');
+    console.error(err);
+  }
+}
+
+async function deleteAllData() {
+  if (!confirm('⚠️ 确定要删除所有数据吗？')) return;
+  if (!confirm('包括所有照片、日记、设置，此操作不可撤销！')) return;
+  if (!confirm('最后一次确认：真的要删除一切吗？')) return;
+  try {
+    await dbClear('memories');
+    await dbClear('assets');
+    showToast('所有数据已删除', 'info');
+    refreshAll();
+  } catch (err) {
+    showToast('删除失败', 'error');
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// 17. 爱心飘落动画 Canvas
+// ══════════════════════════════════════════════════════════════
+let hearts = [];
+let heartsAnimationId = null;
+const MAX_HEARTS = window.innerWidth < 768 ? 30 : 50;
+
+function initHeartsCanvas() {
+  resizeHeartsCanvas();
+  window.addEventListener('resize', resizeHeartsCanvas);
+  if (!heartsAnimationId) {
+    heartsAnimationId = requestAnimationFrame(heartsLoop);
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      cancelAnimationFrame(heartsAnimationId);
+      heartsAnimationId = null;
+    } else if (!heartsAnimationId) {
+      heartsAnimationId = requestAnimationFrame(heartsLoop);
+    }
+  });
+}
+
+function resizeHeartsCanvas() {
+  const dpr = window.devicePixelRatio || 1;
+  heartsCanvas.width = window.innerWidth * dpr;
+  heartsCanvas.height = window.innerHeight * dpr;
+  heartsCtx.setTransform(1, 0, 0, 1, 0, 0);
+  heartsCtx.scale(dpr, dpr);
+}
+
+function spawnHeart() {
+  if (hearts.length >= MAX_HEARTS) return;
+  const theme = localStorage.getItem('theme') || '';
+  const colors = {
+    '': ['#ff6b81', '#ffb8c6', '#ff8fa3'],
+    'blush': ['#f8a4c8', '#fcd5e4', '#ffb8d0'],
+    'lavender': ['#c3cfe2', '#d4c5e2', '#b8a9c9'],
+    'sunset': ['#ff9a76', '#ffc3a0', '#ffb088'],
+  };
+  const palette = colors[theme] || colors[''];
+  hearts.push({
+    x: Math.random() * window.innerWidth,
+    y: -30,
+    size: 14 + Math.random() * 28,
+    speed: 0.4 + Math.random() * 1.6,
+    opacity: 0.25 + Math.random() * 0.6,
+    rotation: Math.random() * Math.PI * 2,
+    rotSpeed: (Math.random() - 0.5) * 0.02,
+    color: palette[Math.floor(Math.random() * palette.length)],
+    wobble: Math.random() * Math.PI * 2,
+    wobbleSpeed: 0.01 + Math.random() * 0.03,
+    wobbleAmp: 0.3 + Math.random() * 1.5,
+  });
+}
+
+function heartsLoop(timestamp) {
+  if (document.hidden) {
+    heartsAnimationId = requestAnimationFrame(heartsLoop);
+    return;
+  }
+
+  const W = window.innerWidth;
+  const H = window.innerHeight;
+
+  heartsCtx.clearRect(0, 0, W, H);
+
+  // 每帧生成1-3颗爱心
+  const spawnRate = MAX_HEARTS / 40;
+  for (let i = 0; i < spawnRate; i++) spawnHeart();
+
+  hearts = hearts.filter(h => {
+    h.y += h.speed;
+    h.rotation += h.rotSpeed;
+    h.wobble += h.wobbleSpeed;
+    h.x += Math.sin(h.wobble) * h.wobbleAmp * 0.3;
+
+    if (h.y > H + 50) return false;
+
+    heartsCtx.save();
+    heartsCtx.globalAlpha = h.opacity;
+    heartsCtx.translate(h.x, h.y);
+    heartsCtx.rotate(h.rotation);
+    heartsCtx.font = `${h.size}px serif`;
+    heartsCtx.fillStyle = h.color;
+    heartsCtx.textAlign = 'center';
+    heartsCtx.textBaseline = 'middle';
+    heartsCtx.fillText('♥', 0, 0);
+    heartsCtx.restore();
+
+    return true;
+  });
+
+  heartsAnimationId = requestAnimationFrame(heartsLoop);
+}
+
+// ══════════════════════════════════════════════════════════════
+// 18. 视图导航
+// ══════════════════════════════════════════════════════════════
+function switchView(viewId) {
+  $$('.view').forEach(v => v.classList.remove('active'));
+  const target = $('#' + viewId);
+  if (target) target.classList.add('active');
+
+  $$('.tab-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.view === viewId);
+  });
+
+  // 加载对应视图数据
+  if (viewId === 'viewTimeline') refreshAll();
+  if (viewId === 'viewJournal') loadJournals();
+  if (viewId === 'viewSettings') {
+    renderPresetPicker();
+    updateSettingsAnniversaryInfo();
+    updateThemeDots();
+  }
+  if (viewId === 'viewAddMemory') {
+    if (!editingMemoryId) {
+      resetPhotoUpload();
+      $('#journalContent').value = '';
+      $('#memoryTitle').value = '';
+      $('#memoryDate').value = new Date().toISOString().split('T')[0];
+      $('#saveMemoryBtn').textContent = '💾 保存回忆';
+    }
+  }
+
+  // 滚动到顶部
+  const viewEl = $('#' + viewId);
+  if (viewEl) viewEl.scrollTop = 0;
+}
+
+function setMode(mode) {
+  currentMode = mode;
+  $$('.segment-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.mode === mode);
+  });
+  $('#photoMode').style.display = mode === 'photo' ? '' : 'none';
+  $('#journalMode').style.display = mode === 'journal' ? '' : 'none';
+}
+
+async function refreshAll() {
+  await loadTimeline();
+  loadJournals();
+  updateAnniversaryBanner();
+}
+
+function updateThemeDots() {
+  const current = localStorage.getItem('theme') || '';
+  $$('.theme-dot').forEach(d => {
+    d.classList.toggle('selected', d.dataset.themeVal === current);
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+// 19. 无限滚动
+// ══════════════════════════════════════════════════════════════
+const loadMoreObserver = new IntersectionObserver((entries) => {
+  if (entries[0].isIntersecting && displayedCount < allMemories.length) {
+    renderTimelineBatch();
+  }
+}, { rootMargin: '200px' });
+
+// ══════════════════════════════════════════════════════════════
+// 20. 键盘事件
+// ══════════════════════════════════════════════════════════════
+document.addEventListener('keydown', (e) => {
+  // 弹窗关闭
+  if (e.key === 'Escape' && $('#detailModal').style.display === 'flex') {
+    closeDetail();
+  }
+  // 锁屏时键盘输入
+  if (lockScreen.classList.contains('hidden')) return;
+  if (e.key >= '0' && e.key <= '9') {
+    if (pinInput.length < PIN_LENGTH) {
+      pinInput += e.key;
+      updatePinDots();
+      if (pinInput.length === PIN_LENGTH) submitPin();
+    }
+  } else if (e.key === 'Backspace' || e.key === 'Delete') {
+    pinInput = pinInput.slice(0, -1);
+    updatePinDots();
+  } else if (e.key === 'Enter') {
+    submitPin();
+  }
+});
+
+// ══════════════════════════════════════════════════════════════
+// 21. 事件委托
+// ══════════════════════════════════════════════════════════════
+
+// 键盘事件
+$('#keypad').addEventListener('click', (e) => {
+  const key = e.target.dataset.key;
+  if (!key) return;
+  if (key === 'clear') { clearPin(); return; }
+  if (key === 'ok') { submitPin(); return; }
+  if (pinInput.length < PIN_LENGTH) {
+    pinInput += key;
+    updatePinDots();
+    if (pinInput.length === PIN_LENGTH) submitPin();
+  }
+});
+
+// Tab切换
+$('#tabBar').addEventListener('click', (e) => {
+  const btn = e.target.closest('.tab-btn');
+  if (!btn) return;
+  switchView(btn.dataset.view);
+});
+
+// 添加模式切换
+document.addEventListener('click', (e) => {
+  const seg = e.target.closest('.segment-btn');
+  if (!seg) return;
+  setMode(seg.dataset.mode);
+});
+
+// 加载更多
+const sentinel = $('#loadMoreSentinel');
+if (sentinel) loadMoreObserver.observe(sentinel);
+
+// ══════════════════════════════════════════════════════════════
+// 22. 应用初始化
+// ══════════════════════════════════════════════════════════════
+async function init() {
+  // 初始化IndexedDB
+  try { await openDB(); } catch (err) { console.error('DB init error:', err); }
+
+  // 应用背景
+  applyBackground();
+
+  // 应用主题
+  const savedTheme = localStorage.getItem('theme') || '';
+  if (savedTheme) {
+    document.documentElement.setAttribute('data-theme', savedTheme);
+  }
+  updateThemeDots();
+
+  // 更新纪念日设置页
+  const annDate = localStorage.getItem('anniversaryDate');
+  if (annDate) {
+    $('#anniversaryInput').value = annDate;
+    updateSettingsAnniversaryInfo();
+  }
+
+  // 加载音乐
+  await loadMusicFromDB();
+
+  // 初始化音量滑块
+  const vol = parseFloat(localStorage.getItem('bgmVolume') || '0.5');
+  $('#volumeSlider').value = vol * 100;
+  bgmAudio.volume = vol;
+  $('#loopCheckbox').checked = localStorage.getItem('bgmLoop') !== 'false';
+  bgmAudio.loop = $('#loopCheckbox').checked;
+
+  // 检查是否需要设置密码
+  const passwordHash = localStorage.getItem('passwordHash');
+  if (!passwordHash) {
+    // 首次使用 - 设置密码
+    isSettingPassword = true;
+    lockTitle.textContent = '设置密码';
+    lockSubtitle.textContent = '设置一个6位数字密码来保护你们的回忆';
+    forgotLink.style.display = 'none';
+  } else {
+    isSettingPassword = false;
+    lockTitle.textContent = 'Love Memory';
+    lockSubtitle.textContent = '输入密码解锁你的回忆';
+    forgotLink.style.display = '';
+  }
+
+  // 默认日期设为今天
+  $('#memoryDate').value = new Date().toISOString().split('T')[0];
+
+  // 锁屏状态
+  lockScreen.classList.remove('hidden');
+  appContainer.style.display = 'none';
+  clearPin();
+
+  // 监听bgm事件更新UI
+  bgmAudio.addEventListener('play', updateMusicUI);
+  bgmAudio.addEventListener('pause', updateMusicUI);
+  bgmAudio.addEventListener('ended', () => {
+    localStorage.setItem('bgmEnabled', 'false');
+    updateMusicUI();
+  });
+
+  // 初始渲染预设选择器
+  renderPresetPicker();
+
+  console.log('💕 Love Memory 已就绪');
+  console.log('  - 密码保护：' + (passwordHash ? '已设置' : '首次使用，请设置密码'));
+  console.log('  - 纪念日：' + (annDate || '未设置，请在设置中配置'));
+  console.log('  - 爱心飘落动画已准备');
+}
+
+// 全局函数暴露
+window.saveMemory = saveMemory;
+window.closeDetail = closeDetail;
+window.deleteMemory = deleteMemory;
+window.editMemory = editMemory;
+window.updateAnniversary = updateAnniversary;
+window.handleBgUpload = handleBgUpload;
+window.resetBackground = resetBackground;
+window.handleMusicUpload = handleMusicUpload;
+window.toggleMusic = toggleMusic;
+window.setVolume = setVolume;
+window.toggleLoop = toggleLoop;
+window.setTheme = setTheme;
+window.changePassword = changePassword;
+window.exportData = exportData;
+window.deleteAllData = deleteAllData;
+window.filterJournals = filterJournals;
+window.resetApp = resetApp;
+
+// 启动应用
+init();
+
+})();
+</script>
+</body>
+</html>
