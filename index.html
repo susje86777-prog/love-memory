@@ -1276,22 +1276,27 @@ async function syncFromCloud() {
     if (!resp.ok) { console.log('Cloud: no data file yet'); return; }
     const apiResp = await resp.json();
     if (!apiResp.content) { console.log('Cloud: empty content'); return; }
-    // 解码外层（兼容新旧格式）
     let rawContent = atob(apiResp.content);
     let enc;
     try { enc = JSON.parse(rawContent); }
     catch (e) { console.log('Cloud: old format, try raw'); enc = apiResp; }
     if (!enc.iv || !enc.data) { console.log('Cloud: unreadable format'); return; }
-    // 解密
     const json = await decryptData(enc.iv, enc.data);
     const cloudData = JSON.parse(json);
     const local = await dbGetAll('memories', 'byDate', 'prev');
-    const localMap = new Map(local.map(m => [m.id, m]));
+    // 用数字ID做Map键（IndexedDB autoIncrement 主键是数字）
+    const localMap = new Map(local.map(m => [Number(m.id), m]));
     stats.memories = cloudData.length;
 
     for (const cm of cloudData) {
+      // ✅ 强制 id 为数字，修复 JSON 序列化导致的字符串类型不匹配
+      cm.id = Number(cm.id);
+      if (!cm.id) { stats.failed++; continue; }
+
       const localItem = localMap.get(cm.id);
+      // 新增或云端更新的才同步
       if (!localItem || (cm.createdAt && localItem.createdAt !== cm.createdAt)) {
+        // 有加密照片标记且本地没有，下载照片
         if (cm._hasImage && (!localItem || !localItem.fullImage)) {
           try {
             const imgResp = await fetch(CLOUD_API + '/photos/' + cm.id + '.enc', {
@@ -1313,11 +1318,20 @@ async function syncFromCloud() {
             }
           } catch (e) { stats.failed++; console.log('Photo #' + cm.id + ' failed:', e.message); }
         }
+        // 保留本地已有的大文件
         if (localItem && !cm.fullImage) {
           cm.fullImage = localItem.fullImage;
           cm.thumbnail = localItem.thumbnail;
         }
         await dbPut('memories', cm);
+        // ✅ 验证写入成功
+        const verify = await dbGet('memories', cm.id);
+        if (verify) {
+          console.log('verify synced record #' + cm.id, verify.title, 'hasImage:', !!verify.fullImage);
+        } else {
+          console.error('❌ dbPut failed for #' + cm.id + ' - record not found after put');
+          stats.failed++;
+        }
       }
     }
     updateSyncStatus();
@@ -1374,7 +1388,7 @@ async function uploadToCloud(memory) {
     delete clean.thumbnail; delete clean.fullImage;
     clean._hasImage = !!memory.fullImage;
 
-    const idx = cloudData.findIndex(m => m.id === clean.id);
+    const idx = cloudData.findIndex(m => Number(m.id) === Number(clean.id));
     if (idx >= 0) cloudData[idx] = clean;
     else cloudData.push(clean);
 
@@ -1394,8 +1408,8 @@ async function uploadToCloud(memory) {
       }, body: JSON.stringify(body)
     });
 
-    // 🔒 加密照片后上传
-    if (memory.fullImage && memory.fullImage instanceof Blob) {
+    // 🔒 加密照片后上传（用 truthy 判断，不用 instanceof Blob）
+    if (memory.fullImage) {
       const encImg = await encryptBlob(memory.fullImage);
       let imgSha = null;
       const path = 'photos/' + memory.id + '.enc';
@@ -1452,7 +1466,7 @@ async function syncNow() {
   // 同步上传所有照片
   let photoCount = 0;
   for (const m of all) {
-    if (m.fullImage && m.fullImage instanceof Blob) {
+    if (m.fullImage) {
       try {
         const encImg = await encryptBlob(m.fullImage);
         let imgSha = null;
