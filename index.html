@@ -1747,6 +1747,7 @@ function resetApp() {
 const uploadZone = $('#uploadZone');
 const photoInput = $('#photoInput');
 
+if (uploadZone && photoInput) {
 uploadZone.addEventListener('click', () => photoInput.click());
 photoInput.addEventListener('change', (e) => {
   if (e.target.files[0]) handlePhotoSelect(e.target.files[0]);
@@ -1767,6 +1768,7 @@ uploadZone.addEventListener('drop', (e) => {
     handlePhotoSelect(file);
   }
 });
+} // end null check
 
 // ══════════════════════════════════════════════════════════════
 // 8. 保存记忆
@@ -2240,7 +2242,7 @@ function toggleMusic() {
 function updateMusicUI() {
   const playing = !bgmAudio.paused;
   musicFAB.classList.toggle('playing', playing);
-  musicFAB.textContent = playing ? '🎵' : '🎵';
+  musicFAB.textContent = playing ? '🎵' : '🔇';
   $('#musicToggleBtn').textContent = playing ? '⏸️ 暂停音乐' : '▶️ 播放音乐';
 }
 
@@ -2351,6 +2353,7 @@ function initHeartsCanvas() {
 }
 
 function resizeHeartsCanvas() {
+  if (!heartsCanvas || !heartsCtx) return;
   const dpr = window.devicePixelRatio || 1;
   heartsCanvas.width = window.innerWidth * dpr;
   heartsCanvas.height = window.innerHeight * dpr;
@@ -2384,7 +2387,8 @@ function spawnHeart() {
 }
 
 function heartsLoop(timestamp) {
-  if (!heartsCtx || document.hidden) {
+  if (!heartsCtx) return;
+  if (document.hidden) {
     heartsAnimationId = requestAnimationFrame(heartsLoop);
     return;
   }
