@@ -221,6 +221,11 @@ a { color: var(--primary); text-decoration: none; }
   border: 1px solid var(--glass-border);
   transition: all 0.15s ease;
   display: flex; align-items: center; justify-content: center;
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  min-width: 44px;
+  min-height: 44px;
 }
 
 .keypad button:active {
@@ -781,12 +786,12 @@ input[type="range"]::-webkit-slider-thumb {
       <div class="pin-dot"></div><div class="pin-dot"></div>
     </div>
     <div class="keypad" id="keypad">
-      <button data-key="1">1</button><button data-key="2">2</button><button data-key="3">3</button>
-      <button data-key="4">4</button><button data-key="5">5</button><button data-key="6">6</button>
-      <button data-key="7">7</button><button data-key="8">8</button><button data-key="9">9</button>
-      <button class="key-clear" data-key="clear">清除</button>
-      <button data-key="0">0</button>
-      <button class="key-ok" data-key="ok">确定</button>
+      <button onclick="keyTap('1')">1</button><button onclick="keyTap('2')">2</button><button onclick="keyTap('3')">3</button>
+      <button onclick="keyTap('4')">4</button><button onclick="keyTap('5')">5</button><button onclick="keyTap('6')">6</button>
+      <button onclick="keyTap('7')">7</button><button onclick="keyTap('8')">8</button><button onclick="keyTap('9')">9</button>
+      <button class="key-clear" onclick="keyTap('clear')">清除</button>
+      <button onclick="keyTap('0')">0</button>
+      <button class="key-ok" onclick="keyTap('ok')">确定</button>
     </div>
     <div class="lock-error" id="lockError"></div>
     <div class="lock-footer">
@@ -2512,14 +2517,8 @@ document.addEventListener('keydown', (e) => {
 // 21. 事件委托
 // ══════════════════════════════════════════════════════════════
 
-// 键盘事件 - 同时绑定 click 和 touchstart
-const keypadEl = document.getElementById('keypad');
-function handleKeypadTap(e) {
-  e.preventDefault();
-  const btn = e.target.closest('button');
-  if (!btn) return;
-  const key = btn.dataset.key;
-  if (!key) return;
+// 键盘输入函数 - 通过 onclick 调用，手机/电脑都可靠
+function keyTap(key) {
   if (key === 'clear') { clearPin(); return; }
   if (key === 'ok') { submitPin(); return; }
   if (pinInput.length < PIN_LENGTH) {
@@ -2528,8 +2527,7 @@ function handleKeypadTap(e) {
     if (pinInput.length === PIN_LENGTH) submitPin();
   }
 }
-keypadEl.addEventListener('click', handleKeypadTap);
-keypadEl.addEventListener('touchend', handleKeypadTap);
+window.keyTap = keyTap;
 
 // Tab切换
 $('#tabBar').addEventListener('click', (e) => {
