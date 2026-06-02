@@ -1587,12 +1587,13 @@ function dbGet(storeName, key) {
 }
 
 function dbDelete(storeName, key) {
+  console.log('dbDelete store:', storeName, 'key:', key, typeof key);
   return openDB().then(db => {
     return new Promise((resolve, reject) => {
       const tx = db.transaction(storeName, 'readwrite');
       const req = tx.objectStore(storeName).delete(key);
-      req.onsuccess = () => resolve();
-      req.onerror = (e) => reject(e.target.error);
+      req.onsuccess = () => { console.log('dbDelete OK for key:', key); resolve(); };
+      req.onerror = (e) => { console.error('dbDelete FAIL for key:', key, e.target.error); reject(e.target.error); };
       tx.oncomplete = () => db.close();
     });
   });
@@ -2047,9 +2048,19 @@ function closeDetail(e) {
 }
 
 async function deleteMemory(id) {
-  const targetId = id || currentDetailId;
+  // IndexedDB autoIncrement keyPath='id' 生成数字键，经 JSON 云同步后可能变字符串，统一转数字
+  const rawId = id || currentDetailId || document.getElementById('detailModal')._memoryId;
+  const targetId = Number(rawId);
+  console.log('deleteMemory targetId', targetId, typeof targetId, 'raw:', rawId, typeof rawId);
   if (!targetId) {
     showToast('删除失败：未找到记忆', 'error');
+    return;
+  }
+  // 删除前验证记录是否真实存在
+  const record = await dbGet('memories', targetId);
+  console.log('record before delete', record);
+  if (!record) {
+    showToast('删除失败：记录不存在（可能已被同步覆盖）', 'error');
     return;
   }
   if (!confirm('确定要删除这条回忆吗？')) return;
@@ -2057,7 +2068,6 @@ async function deleteMemory(id) {
     await dbDelete('memories', targetId);
     showToast('回忆已删除', 'info');
     closeDetail();
-    // 直接重新加载时间轴（内部会先清空容器）
     await loadTimeline();
     loadJournals();
     updateAnniversaryBanner();
