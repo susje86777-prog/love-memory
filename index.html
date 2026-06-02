@@ -1005,7 +1005,7 @@ input[type="range"]::-webkit-slider-thumb {
       <div class="modal-body" id="modalBody"></div>
       <div class="modal-actions">
         <button class="btn btn-secondary" id="modalEditBtn" onclick="editMemory()">✏️ 编辑</button>
-        <button class="btn btn-danger" id="modalDeleteBtn" onclick="deleteMemory()">🗑️ 删除</button>
+        <button class="btn btn-danger" id="modalDeleteBtn" onclick="deleteMemory(document.getElementById('detailModal')._memoryId)">🗑️ 删除</button>
       </div>
     </div>
   </div>
@@ -2029,6 +2029,8 @@ function showDetail(mem) {
   $('#modalEditBtn').onclick = () => editMemory(mem);
   $('#modalDeleteBtn').onclick = () => deleteMemory(mem.id);
   $('#detailModal').style.display = 'flex';
+  // 把记忆 ID 存到 modal 元素上，确保 HTML onclick 也能拿到
+  document.getElementById('detailModal')._memoryId = mem.id;
   document.body.style.overflow = 'hidden';
 }
 
@@ -2045,18 +2047,22 @@ function closeDetail(e) {
 }
 
 async function deleteMemory(id) {
-  console.log('delete memory', id);
+  const targetId = id || currentDetailId;
+  if (!targetId) {
+    showToast('删除失败：未找到记忆', 'error');
+    return;
+  }
   if (!confirm('确定要删除这条回忆吗？')) return;
   try {
-    const targetId = id || currentDetailId;
-    console.log('before delete', targetId);
     await dbDelete('memories', targetId);
-    console.log('after delete', targetId);
     showToast('回忆已删除', 'info');
     closeDetail();
-    await refreshAll();
+    // 直接重新加载时间轴（内部会先清空容器）
+    await loadTimeline();
+    loadJournals();
+    updateAnniversaryBanner();
   } catch (err) {
-    showToast('删除失败', 'error');
+    showToast('删除失败，请重试', 'error');
     console.error('delete error', err);
   }
 }
