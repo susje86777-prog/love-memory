@@ -956,7 +956,10 @@ input[type="range"]::-webkit-slider-thumb {
         🔗 激活云同步
       </button>
       <button class="btn btn-secondary" style="margin-bottom:4px" onclick="syncNow()">
-        🔄 手动同步
+        🔄 上传到云端
+      </button>
+      <button class="btn btn-secondary" style="margin-bottom:4px" onclick="pullFromCloud()">
+        📥 从云端下载
       </button>
       <div style="font-size:10px;color:var(--text-muted);margin-top:8px">
         💡 两个人用<u>同一个密钥</u>，照片日记实时同步
@@ -1259,31 +1262,34 @@ async function syncFromCloud() {
   if (!token) return;
   try {
     const resp = await fetch(CLOUD_API + '/' + SYNC_DATA_FILE, {
-      headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.raw+json' }
+      headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json' }
     });
     if (!resp.ok) return;
-    const raw = await resp.json();
+    // GitHub API 返回 { content: "base64...", sha: "..." }
+    const apiResp = await resp.json();
+    const rawContent = atob(apiResp.content);
+    const enc = JSON.parse(rawContent);
     // 解密
-    const json = await decryptData(raw.iv, raw.data);
+    const json = await decryptData(enc.iv, enc.data);
     const cloudData = JSON.parse(json);
     const local = await dbGetAll('memories', 'byDate', 'prev');
     const localIds = new Set(local.map(m => m.id));
     for (const cm of cloudData) {
       if (!localIds.has(cm.id)) {
-        // 如果有加密照片链接，下载并解密
+        // 如果有加密照片，下载并解密
         if (cm._hasImage) {
           try {
             const imgResp = await fetch(CLOUD_API + '/photos/' + cm.id + '.enc', {
-              headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.raw+json' }
+              headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json' }
             });
             if (imgResp.ok) {
-              const imgRaw = await imgResp.json();
-              const blob = await decryptBlob(imgRaw.iv, imgRaw.data);
+              const imgApi = await imgResp.json();
+              const imgEnc = JSON.parse(atob(imgApi.content));
+              const blob = await decryptBlob(imgEnc.iv, imgEnc.data);
               cm.fullImage = blob;
-              // 生成缩略图
               cm.thumbnail = await resizeBlob(blob, 300, 0.6);
             }
-          } catch (e) { console.log('No photo for #' + cm.id); }
+          } catch (e) { console.log('No photo for #' + cm.id + ':', e.message); }
         }
         await dbPut('memories', cm);
       }
@@ -1339,12 +1345,12 @@ async function uploadToCloud(memory) {
     if (idx >= 0) cloudData[idx] = clean;
     else cloudData.push(clean);
 
-    // 🔒 加密后上传
+    // 🔒 加密后上传 (content 必须是 base64 编码)
     const json = JSON.stringify(cloudData);
     const enc = await encryptData(json);
     const body = {
-      message: '💕 记忆 #' + memory.id + ' (AES-256-GCM 加密)',
-      content: JSON.stringify(enc)
+      message: '💕 记忆 #' + memory.id,
+      content: btoa(JSON.stringify(enc))
     };
     if (sha) body.sha = sha;
 
@@ -1356,7 +1362,7 @@ async function uploadToCloud(memory) {
       }, body: JSON.stringify(body)
     });
 
-    // 🔒 加密照片后上传
+    // 🔒 加密照片后上传 (content 必须 base64 编码)
     if (memory.fullImage && memory.fullImage instanceof Blob) {
       const encImg = await encryptBlob(memory.fullImage);
       let imgSha = null;
@@ -1367,7 +1373,10 @@ async function uploadToCloud(memory) {
         });
         if (cr.ok) { const ex = await cr.json(); imgSha = ex.sha; }
       } catch (ee) {}
-      const ib = { message: '📸 照片 #' + memory.id + ' (AES-256-GCM)', content: JSON.stringify(encImg) };
+      const ib = {
+        message: '📸 照片 #' + memory.id,
+        content: btoa(JSON.stringify(encImg))
+      };
       if (imgSha) ib.sha = imgSha;
       await fetch(CLOUD_API + '/' + path, {
         method: 'PUT', headers: {
@@ -1398,7 +1407,7 @@ async function syncNow() {
   } catch (e) {}
   const body = {
     message: '🔄 加密全量同步 (' + clean.length + '条)',
-    content: JSON.stringify(enc)
+    content: btoa(JSON.stringify(enc))
   };
   if (sha) body.sha = sha;
   const resp = await fetch(CLOUD_API + '/' + SYNC_DATA_FILE, {
@@ -2633,8 +2642,21 @@ window.exportData = exportData;
 window.deleteAllData = deleteAllData;
 window.filterJournals = filterJournals;
 window.installApp = installApp;
+async function pullFromCloud() {
+  const token = getSyncToken();
+  if (!token) { showToast('请先激活云同步', 'info'); return; }
+  showToast('📥 正在从云端下载...', 'info');
+  try {
+    await syncFromCloud();
+    await refreshAll();
+    showToast('✅ 下载完成！', 'success');
+  } catch (e) {
+    showToast('下载失败: ' + e.message, 'error');
+  }
+}
 window.setupSync = setupSync;
 window.syncNow = syncNow;
+window.pullFromCloud = pullFromCloud;
 window.resetApp = resetApp;
 
 // ── 清除旧的 Service Worker（之前版本可能导致缓存问题）──
