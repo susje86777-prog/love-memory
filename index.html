@@ -2643,14 +2643,10 @@ window.setupSync = setupSync;
 window.syncNow = syncNow;
 window.resetApp = resetApp;
 
-// ── 注册 Service Worker（离线缓存 + 原生APP体验）──
+// ── 清除旧的 Service Worker（之前版本可能导致缓存问题）──
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').then(() => {
-      console.log('✅ SW registered - 离线可用');
-    }).catch(() => {
-      console.log('SW registration skipped');
-    });
+  navigator.serviceWorker.getRegistrations().then(regs => {
+    regs.forEach(r => { r.unregister(); console.log('🗑️ 旧SW已清除'); });
   });
 }
 
