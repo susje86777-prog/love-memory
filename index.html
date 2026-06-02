@@ -770,46 +770,38 @@ input[type="range"]::-webkit-slider-thumb {
 <canvas id="heartsCanvas"></canvas>
 
 <!-- ════════════════════════════════════════════════════════════
-   密码锁屏
+   密码锁屏 - 极简可靠版
    ════════════════════════════════════════════════════════════ -->
 <div id="lockScreen" class="lock-screen">
-  <div class="lock-card">
-    <div class="lock-icon">💕</div>
-    <div class="lock-title" id="lockTitle">Love Memory</div>
-    <div class="lock-subtitle" id="lockSubtitle">输入密码解锁你的回忆</div>
-    <div class="pin-display" id="pinDisplay">
-      <div class="pin-dot"></div><div class="pin-dot"></div>
-      <div class="pin-dot"></div><div class="pin-dot"></div>
-      <div class="pin-dot"></div><div class="pin-dot"></div>
+  <div style="text-align:center;padding:40px 30px;border-radius:24px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);max-width:380px;width:90%;">
+    <div style="font-size:56px;margin-bottom:12px;">💕</div>
+    <div style="font-size:24px;font-weight:700;margin-bottom:8px;color:#ff6b81;letter-spacing:2px;" id="lockTitle">Love Memory</div>
+    <div style="font-size:13px;color:#7a6670;margin-bottom:28px;" id="lockSubtitle">输入密码解锁你的回忆</div>
+    <div id="pinDots" style="display:flex;justify-content:center;gap:14px;margin-bottom:28px;">
+      <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+      <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
     </div>
-    <div class="keypad" id="keypad">
-      <button onclick="keyTap('1')">1</button><button onclick="keyTap('2')">2</button><button onclick="keyTap('3')">3</button>
-      <button onclick="keyTap('4')">4</button><button onclick="keyTap('5')">5</button><button onclick="keyTap('6')">6</button>
-      <button onclick="keyTap('7')">7</button><button onclick="keyTap('8')">8</button><button onclick="keyTap('9')">9</button>
-      <button class="key-clear" onclick="keyTap('clear')">清除</button>
-      <button onclick="keyTap('0')">0</button>
-      <button class="key-ok" onclick="keyTap('ok')">确定</button>
+    <div id="pinKeys" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;max-width:280px;margin:0 auto;">
+      <button onclick="pinPress('1')" style="width:100%;aspect-ratio:1;border-radius:50%;font-size:22px;font-weight:600;color:#f0e6e8;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.12);cursor:pointer;touch-action:manipulation;">1</button>
+      <button onclick="pinPress('2')" style="width:100%;aspect-ratio:1;border-radius:50%;font-size:22px;font-weight:600;color:#f0e6e8;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.12);cursor:pointer;touch-action:manipulation;">2</button>
+      <button onclick="pinPress('3')" style="width:100%;aspect-ratio:1;border-radius:50%;font-size:22px;font-weight:600;color:#f0e6e8;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.12);cursor:pointer;touch-action:manipulation;">3</button>
+      <button onclick="pinPress('4')" style="width:100%;aspect-ratio:1;border-radius:50%;font-size:22px;font-weight:600;color:#f0e6e8;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.12);cursor:pointer;touch-action:manipulation;">4</button>
+      <button onclick="pinPress('5')" style="width:100%;aspect-ratio:1;border-radius:50%;font-size:22px;font-weight:600;color:#f0e6e8;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.12);cursor:pointer;touch-action:manipulation;">5</button>
+      <button onclick="pinPress('6')" style="width:100%;aspect-ratio:1;border-radius:50%;font-size:22px;font-weight:600;color:#f0e6e8;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.12);cursor:pointer;touch-action:manipulation;">6</button>
+      <button onclick="pinPress('7')" style="width:100%;aspect-ratio:1;border-radius:50%;font-size:22px;font-weight:600;color:#f0e6e8;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.12);cursor:pointer;touch-action:manipulation;">7</button>
+      <button onclick="pinPress('8')" style="width:100%;aspect-ratio:1;border-radius:50%;font-size:22px;font-weight:600;color:#f0e6e8;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.12);cursor:pointer;touch-action:manipulation;">8</button>
+      <button onclick="pinPress('9')" style="width:100%;aspect-ratio:1;border-radius:50%;font-size:22px;font-weight:600;color:#f0e6e8;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.12);cursor:pointer;touch-action:manipulation;">9</button>
+      <button onclick="pinPress('clear')" style="width:100%;aspect-ratio:1;border-radius:50%;font-size:14px;font-weight:600;color:#8a6a7a;background:rgba(255,255,255,0.03);border:2px solid rgba(255,255,255,0.08);cursor:pointer;touch-action:manipulation;">清除</button>
+      <button onclick="pinPress('0')" style="width:100%;aspect-ratio:1;border-radius:50%;font-size:22px;font-weight:600;color:#f0e6e8;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.12);cursor:pointer;touch-action:manipulation;">0</button>
+      <button onclick="pinPress('ok')" style="width:100%;aspect-ratio:1;border-radius:50%;font-size:14px;font-weight:700;color:#ff6b81;background:rgba(255,107,129,0.15);border:2px solid rgba(255,107,129,0.2);cursor:pointer;touch-action:manipulation;">确定</button>
     </div>
-    <div class="lock-error" id="lockError"></div>
-    <div class="lock-footer">
-      <a id="forgotLink" style="display:none" onclick="resetApp()">忘记密码？(将清空所有数据)</a>
+    <div id="lockMsg" style="color:#ff4757;font-size:12px;margin-top:16px;min-height:18px;"></div>
+    <div style="margin-top:20px;">
+      <a id="forgotLink" style="display:none;font-size:11px;color:#7a6670;cursor:pointer;text-decoration:underline;" onclick="resetApp()">忘记密码？(将清空所有数据)</a>
     </div>
-    <div class="install-hint" id="installHint">
-      <div class="install-hint-text">📱 点下方按钮安装到手机桌面</div>
-      <button class="btn-install" id="installBtn" style="display:none" onclick="installApp()">
-        📲 添加至桌面（变APP）
-      </button>
-      <div class="install-manual" id="installManual">
-        <details>
-          <summary>📖 手动添加教程（点开）</summary>
-          <div class="install-steps">
-            <p><b>Chrome / Edge：</b>右上角 ⋮ → 添加到主屏幕</p>
-            <p><b>自带浏览器：</b>菜单 ≡ → 添加至桌面</p>
-            <p><b>华为浏览器：</b>中间 ··· → 添加到桌面</p>
-            <p><b>QQ浏览器：</b>中间菜单 → 添加到桌面</p>
-          </div>
-        </details>
-      </div>
+    <div id="installHint" style="margin-top:16px;padding:14px;background:rgba(255,255,255,0.04);border-radius:14px;border:1px dashed rgba(255,255,255,0.15);">
+      <div style="font-size:12px;color:#b8a0a8;margin-bottom:10px;">📱 点下方按钮安装到手机桌面</div>
+      <button id="installBtn" style="display:none;width:100%;padding:14px;border-radius:25px;font-size:15px;font-weight:700;background:linear-gradient(135deg,#4CAF50,#45a049);color:#fff;border:none;cursor:pointer;" onclick="installApp()">📲 添加至桌面（变APP）</button>
     </div>
   </div>
 </div>
@@ -1074,8 +1066,8 @@ const $$ = (sel) => document.querySelectorAll(sel);
 const lockScreen = $('#lockScreen');
 const lockTitle = $('#lockTitle');
 const lockSubtitle = $('#lockSubtitle');
-const pinDisplay = $('#pinDisplay');
-const lockError = $('#lockError');
+const pinDisplay = $('#pinDots');
+const lockError = $('#lockMsg');
 const forgotLink = $('#forgotLink');
 const appContainer = $('#appContainer');
 const heartsCanvas = $('#heartsCanvas');
@@ -2515,7 +2507,7 @@ document.addEventListener('keydown', (e) => {
 // ══════════════════════════════════════════════════════════════
 
 // 键盘输入函数 - 通过 onclick 调用，手机/电脑都可靠
-function keyTap(key) {
+function pinPress(key) {
   if (key === 'clear') { clearPin(); return; }
   if (key === 'ok') { submitPin(); return; }
   if (pinInput.length < PIN_LENGTH) {
@@ -2524,7 +2516,7 @@ function keyTap(key) {
     if (pinInput.length === PIN_LENGTH) submitPin();
   }
 }
-window.keyTap = keyTap;
+window.pinPress = pinPress;
 
 // Tab切换
 $('#tabBar').addEventListener('click', (e) => {
