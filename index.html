@@ -1417,52 +1417,14 @@ async function uploadToCloud(memory) {
 
     const json = JSON.stringify(cloudData);
     const enc = await encryptData(json);
-    const body = {
-      message: '💕 记忆 #' + memory.id,
-      content: btoa(JSON.stringify(enc))
-    };
-    if (sha) body.sha = sha;
+    await githubPut(SYNC_DATA_FILE, JSON.stringify(enc), '💕 记忆 #' + memory.id);
 
-    await fetch(CLOUD_API + '/' + SYNC_DATA_FILE, {
-      method: 'PUT', headers: {
-        'Authorization': 'token ' + token,
-        'Accept': 'application/vnd.github+json',
-        'Content-Type': 'application/json'
-      }, body: JSON.stringify(body)
-    });
-
-    // 🔒 加密照片后上传（用 truthy 判断，不用 instanceof Blob）
+    // 🔒 加密照片后上传
     if (memory.fullImage) {
       console.log('📸 uploadToCloud photo #' + memory.id);
       const encImg = await encryptBlob(memory.fullImage);
-      console.log('📸 encrypted #' + memory.id + ' data len:', encImg.data.length);
-      let imgSha = null;
-      const path = 'photos/' + memory.id + '.enc';
-      try {
-        const cr = await fetch(CLOUD_API + '/' + path, {
-          headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json' }
-        });
-        if (cr.ok) { const ex = await cr.json(); imgSha = ex.sha; }
-      } catch (ee) {}
-      const bodyJson = JSON.stringify(encImg);
-      const ib = {
-        message: '📸 照片 #' + memory.id,
-        content: btoa(bodyJson)
-      };
-      if (imgSha) ib.sha = imgSha;
-      const putResp = await fetch(CLOUD_API + '/' + path, {
-        method: 'PUT', headers: {
-          'Authorization': 'token ' + token,
-          'Accept': 'application/vnd.github+json',
-          'Content-Type': 'application/json'
-        }, body: JSON.stringify(ib)
-      });
-      if (putResp.ok) {
-        console.log('📸 uploadToCloud photo #' + memory.id + ' OK');
-      } else {
-        const eb = await putResp.text();
-        console.error('📸 uploadToCloud photo #' + memory.id + ' FAILED:', putResp.status, eb.substring(0,200));
-      }
+      await githubPut('photos/' + memory.id + '.enc', JSON.stringify(encImg), '📸 照片 #' + memory.id);
+      console.log('📸 uploadToCloud photo #' + memory.id + ' OK');
     }
     console.log('🔒 已加密同步到云端: #' + memory.id);
   } catch (e) { console.error('Sync err:', e); }
@@ -1472,68 +1434,57 @@ async function syncNow() {
   const token = getSyncToken();
   if (!token) { showToast('请先在设置里配置同步密钥', 'info'); return; }
   showToast('🔒 正在全量同步（含照片）...', 'info');
-  const all = await dbGetAll('memories', 'byDate', 'prev');
-  const clean = all.map(m => { const c = { ...m }; delete c.thumbnail; delete c.fullImage; c._hasImage = !!m.fullImage; return c; });
-  const json = JSON.stringify(clean);
-  const enc = await encryptData(json);
+  try {
+    const all = await dbGetAll('memories', 'byDate', 'prev');
+    const clean = all.map(m => { const c = { ...m }; delete c.thumbnail; delete c.fullImage; c._hasImage = !!m.fullImage; return c; });
+    const json = JSON.stringify(clean);
+    const enc = await encryptData(json);
+    await githubPut(SYNC_DATA_FILE, JSON.stringify(enc), '🔄 全量同步(' + clean.length + '条)');
+
+    // 逐张上传照片
+    let photoCount = 0;
+    for (const m of all) {
+      if (m.fullImage) {
+        try {
+          console.log('📸 photo #' + m.id, 'blob:', (m.fullImage.size || m.fullImage.byteLength || '?'), 'bytes');
+          const encImg = await encryptBlob(m.fullImage);
+          await githubPut('photos/' + m.id + '.enc', JSON.stringify(encImg), '📸 照片 #' + m.id);
+          photoCount++;
+          console.log('📸 photo #' + m.id + ' uploaded OK');
+        } catch (e) { console.error('Photo upload fail #' + m.id, e.message); }
+      }
+    }
+    showToast('✅ 同步完成！' + clean.length + '条记忆 + ' + photoCount + '张照片', 'success');
+  } catch (e) { showToast('同步失败: ' + e.message, 'error'); }
+}
+
+// ── 通用 GitHub PUT 上传辅助函数 ──
+async function githubPut(path, contentJson, message) {
+  const token = getSyncToken();
+  if (!token) throw new Error('no token');
+  // 先获取现有 SHA（如果文件已存在）
   let sha = null;
   try {
-    const r = await fetch(CLOUD_API + '/' + SYNC_DATA_FILE, {
+    const cr = await fetch(CLOUD_API + '/' + path, {
       headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json' }
     });
-    if (r.ok) { const ex = await r.json(); sha = ex.sha; }
+    if (cr.ok) { const ex = await cr.json(); sha = ex.sha; }
   } catch (e) {}
-  const body = {
-    message: '🔄 加密全量同步 (' + clean.length + '条)',
-    content: btoa(JSON.stringify(enc))
-  };
+  const body = { message, content: btoa(contentJson) };
   if (sha) body.sha = sha;
-  const resp = await fetch(CLOUD_API + '/' + SYNC_DATA_FILE, {
+  const resp = await fetch(CLOUD_API + '/' + path, {
     method: 'PUT', headers: {
       'Authorization': 'token ' + token,
       'Accept': 'application/vnd.github+json',
       'Content-Type': 'application/json'
     }, body: JSON.stringify(body)
   });
-  // 同步上传所有照片
-  let photoCount = 0;
-  for (const m of all) {
-    if (m.fullImage) {
-      try {
-        console.log('📸 encrypt photo #' + m.id, 'blob size:', (m.fullImage.size || m.fullImage.byteLength || '?'));
-        const encImg = await encryptBlob(m.fullImage);
-        console.log('📸 photo #' + m.id + ' encrypted, data len:', encImg.data.length);
-        let imgSha = null;
-        const path = 'photos/' + m.id + '.enc';
-        try {
-          const cr = await fetch(CLOUD_API + '/' + path, {
-            headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json' }
-          });
-          if (cr.ok) { const ex = await cr.json(); imgSha = ex.sha; }
-        } catch (ee) {}
-        const bodyJson = JSON.stringify(encImg);
-        console.log('📸 photo #' + m.id + ' body JSON length:', bodyJson.length);
-        const ib = { message: '📸 照片 #' + m.id, content: btoa(bodyJson) };
-        if (imgSha) ib.sha = imgSha;
-        const putResp = await fetch(CLOUD_API + '/' + path, {
-          method: 'PUT', headers: {
-            'Authorization': 'token ' + token,
-            'Accept': 'application/vnd.github+json',
-            'Content-Type': 'application/json'
-          }, body: JSON.stringify(ib)
-        });
-        if (putResp.ok) {
-          console.log('📸 photo #' + m.id + ' uploaded OK');
-          photoCount++;
-        } else {
-          const eb = await putResp.text();
-          console.error('📸 photo #' + m.id + ' FAILED:', putResp.status, eb.substring(0,200));
-        }
-      } catch (e) { console.error('Photo upload fail #' + m.id, e.message, e.stack); }
-    }
+  if (!resp.ok) {
+    const errText = await resp.text();
+    console.error('GitHub PUT ' + path + ' FAILED:', resp.status, errText.substring(0,300));
+    throw new Error('GitHub PUT ' + resp.status + ': ' + errText.substring(0,100));
   }
-  if (resp.ok) { showToast('✅ 同步完成！' + clean.length + '条记忆 + ' + photoCount + '张照片', 'success'); }
-  else { showToast('同步失败，请检查密钥', 'error'); }
+  return resp.json();
 }
 
 async function resetCloud() {
@@ -1542,18 +1493,10 @@ async function resetCloud() {
   if (!confirm('⚠️ 清除云端所有数据？本地数据不会丢失。')) return;
   showToast('🗑️ 正在清除云端...', 'info');
   try {
-    // 上传空数组覆盖云端
     const enc = await encryptData('[]');
-    const body = { message: '🔄 云端重置', content: btoa(JSON.stringify(enc)) };
-    await fetch(CLOUD_API + '/' + SYNC_DATA_FILE, {
-      method: 'PUT', headers: {
-        'Authorization': 'token ' + token,
-        'Accept': 'application/vnd.github+json',
-        'Content-Type': 'application/json'
-      }, body: JSON.stringify(body)
-    });
+    await githubPut(SYNC_DATA_FILE, JSON.stringify(enc), '🔄 云端重置');
     showToast('✅ 云端已清除，请重新上传', 'success');
-  } catch (e) { showToast('清除失败', 'error'); }
+  } catch (e) { showToast('清除失败: ' + e.message, 'error'); }
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -1844,7 +1787,7 @@ async function deleteFromCloud(targetId) {
   const token = getSyncToken();
   if (!token) return;
   try {
-    let cloudData = [], sha = null;
+    let cloudData = [];
     const r = await fetch(CLOUD_API + '/' + SYNC_DATA_FILE, {
       headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json' }
     });
@@ -1854,49 +1797,23 @@ async function deleteFromCloud(targetId) {
       const enc = JSON.parse(rawContent);
       const json = await decryptData(enc.iv, enc.data);
       cloudData = JSON.parse(json);
-      sha = apiResp.sha;
     }
-    // 按数字 id 过滤
     cloudData = cloudData.filter(m => Number(m.id) !== Number(targetId));
     const json = JSON.stringify(cloudData);
     const enc = await encryptData(json);
-    const body = { message: '🗑️ 删除 #' + targetId, content: btoa(JSON.stringify(enc)) };
-    if (sha) body.sha = sha;
-    await fetch(CLOUD_API + '/' + SYNC_DATA_FILE, {
-      method: 'PUT', headers: {
-        'Authorization': 'token ' + token,
-        'Accept': 'application/vnd.github+json',
-        'Content-Type': 'application/json'
-      }, body: JSON.stringify(body)
-    });
+    await githubPut(SYNC_DATA_FILE, JSON.stringify(enc), '🗑️ 删除 #' + targetId);
     console.log('☁️ 云端已删除 #' + targetId);
   } catch (e) { console.log('Cloud delete skip:', e.message); }
 }
 
 // ── 全量上传云同步 ──
 async function uploadToCloudAll() {
-  const token = getSyncToken();
-  if (!token) return;
+  if (!syncEnabled()) return;
   const all = await dbGetAll('memories', 'byDate', 'prev');
   const clean = all.map(m => { const c = { ...m }; delete c.thumbnail; delete c.fullImage; c._hasImage = !!m.fullImage; return c; });
   const json = JSON.stringify(clean);
   const enc = await encryptData(json);
-  let sha = null;
-  try {
-    const r = await fetch(CLOUD_API + '/' + SYNC_DATA_FILE, {
-      headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json' }
-    });
-    if (r.ok) { const ex = await r.json(); sha = ex.sha; }
-  } catch (e) {}
-  const body = { message: '🔄 全量同步', content: btoa(JSON.stringify(enc)) };
-  if (sha) body.sha = sha;
-  await fetch(CLOUD_API + '/' + SYNC_DATA_FILE, {
-    method: 'PUT', headers: {
-      'Authorization': 'token ' + token,
-      'Accept': 'application/vnd.github+json',
-      'Content-Type': 'application/json'
-    }, body: JSON.stringify(body)
-  });
+  await githubPut(SYNC_DATA_FILE, JSON.stringify(enc), '🔄 全量同步');
   console.log('☁️ 全量同步完成');
 }
 
