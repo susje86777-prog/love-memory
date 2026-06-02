@@ -1797,6 +1797,67 @@ function tryAutoPlayMusic() {
   }
 }
 
+// ── 从云端删除一条记录 ──
+async function deleteFromCloud(targetId) {
+  const token = getSyncToken();
+  if (!token) return;
+  try {
+    let cloudData = [], sha = null;
+    const r = await fetch(CLOUD_API + '/' + SYNC_DATA_FILE, {
+      headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json' }
+    });
+    if (r.ok) {
+      const apiResp = await r.json();
+      const rawContent = atob(apiResp.content);
+      const enc = JSON.parse(rawContent);
+      const json = await decryptData(enc.iv, enc.data);
+      cloudData = JSON.parse(json);
+      sha = apiResp.sha;
+    }
+    // 按数字 id 过滤
+    cloudData = cloudData.filter(m => Number(m.id) !== Number(targetId));
+    const json = JSON.stringify(cloudData);
+    const enc = await encryptData(json);
+    const body = { message: '🗑️ 删除 #' + targetId, content: btoa(JSON.stringify(enc)) };
+    if (sha) body.sha = sha;
+    await fetch(CLOUD_API + '/' + SYNC_DATA_FILE, {
+      method: 'PUT', headers: {
+        'Authorization': 'token ' + token,
+        'Accept': 'application/vnd.github+json',
+        'Content-Type': 'application/json'
+      }, body: JSON.stringify(body)
+    });
+    console.log('☁️ 云端已删除 #' + targetId);
+  } catch (e) { console.log('Cloud delete skip:', e.message); }
+}
+
+// ── 全量上传云同步 ──
+async function uploadToCloudAll() {
+  const token = getSyncToken();
+  if (!token) return;
+  const all = await dbGetAll('memories', 'byDate', 'prev');
+  const clean = all.map(m => { const c = { ...m }; delete c.thumbnail; delete c.fullImage; c._hasImage = !!m.fullImage; return c; });
+  const json = JSON.stringify(clean);
+  const enc = await encryptData(json);
+  let sha = null;
+  try {
+    const r = await fetch(CLOUD_API + '/' + SYNC_DATA_FILE, {
+      headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json' }
+    });
+    if (r.ok) { const ex = await r.json(); sha = ex.sha; }
+  } catch (e) {}
+  const body = { message: '🔄 全量同步', content: btoa(JSON.stringify(enc)) };
+  if (sha) body.sha = sha;
+  await fetch(CLOUD_API + '/' + SYNC_DATA_FILE, {
+    method: 'PUT', headers: {
+      'Authorization': 'token ' + token,
+      'Accept': 'application/vnd.github+json',
+      'Content-Type': 'application/json'
+    }, body: JSON.stringify(body)
+  });
+  console.log('☁️ 全量同步完成');
+}
+
 // ── PWA 安装 ──
 let deferredPrompt = null;
 
@@ -2062,32 +2123,34 @@ function closeDetail(e) {
 }
 
 async function deleteMemory(id) {
-  // IndexedDB autoIncrement keyPath='id' 生成数字键，经 JSON 云同步后可能变字符串，统一转数字
   const rawId = id || currentDetailId || document.getElementById('detailModal')._memoryId;
   const targetId = Number(rawId);
-  console.log('deleteMemory targetId', targetId, typeof targetId, 'raw:', rawId, typeof rawId);
   if (!targetId) {
     showToast('删除失败：未找到记忆', 'error');
     return;
   }
-  // 删除前验证记录是否真实存在
-  const record = await dbGet('memories', targetId);
-  console.log('record before delete', record);
-  if (!record) {
-    showToast('删除失败：记录不存在（可能已被同步覆盖）', 'error');
-    return;
-  }
-  if (!confirm('确定要删除这条回忆吗？')) return;
   try {
+    const before = await dbGet('memories', targetId);
+    console.log('before delete', before);
+    if (!before) {
+      showToast('删除失败：记录不存在', 'error');
+      return;
+    }
+    if (!confirm('确定要删除这条回忆吗？')) return;
     await dbDelete('memories', targetId);
-    showToast('回忆已删除', 'info');
+    const after = await dbGet('memories', targetId);
+    console.log('after delete', after); // 应为 undefined
+    showToast('已删除回忆', 'success');
+    // 云端同步删除
+    if (syncEnabled()) { deleteFromCloud(targetId); }
     closeDetail();
+    // 重新加载时间轴（先清空容器再渲染）
     await loadTimeline();
     loadJournals();
     updateAnniversaryBanner();
   } catch (err) {
+    console.error('删除失败', err);
     showToast('删除失败，请重试', 'error');
-    console.error('delete error', err);
   }
 }
 
@@ -2784,6 +2847,8 @@ window.setupSync = setupSync;
 window.syncNow = syncNow;
 window.pullFromCloud = pullFromCloud;
 window.resetCloud = resetCloud;
+window.deleteFromCloud = deleteFromCloud;
+window.uploadToCloudAll = uploadToCloudAll;
 window.resetApp = resetApp;
 
 // ── 清除旧的 Service Worker（之前版本可能导致缓存问题）──
