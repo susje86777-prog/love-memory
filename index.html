@@ -1180,11 +1180,13 @@ async function getEncryptionKey() {
 
 function getEncryptionSalt() {
   let salt = localStorage.getItem('enc_salt');
-  if (!salt) {
-    // 生成随机16字节盐值
-    salt = Array.from(crypto.getRandomValues(new Uint8Array(16)))
-      .map(b => b.toString(16).padStart(2, '0')).join('');
+  // 如果盐值不是从密码哈希派生的（旧版随机盐），重新生成
+  const pwHash = localStorage.getItem('passwordHash') || 'default';
+  const expectedSalt = pwHash.substring(0, 32);
+  if (!salt || salt !== expectedSalt) {
+    salt = expectedSalt;
     localStorage.setItem('enc_salt', salt);
+    console.log('🔑 加密盐值已同步');
   }
   return salt;
 }
