@@ -1071,7 +1071,7 @@ const lockError = $('#lockMsg');
 const forgotLink = $('#forgotLink');
 const appContainer = $('#appContainer');
 const heartsCanvas = $('#heartsCanvas');
-const heartsCtx = heartsCanvas.getContext('2d');
+const heartsCtx = heartsCanvas ? heartsCanvas.getContext('2d') : null;
 const bgmAudio = $('#bgmAudio');
 const musicFAB = $('#musicFAB');
 
@@ -2325,6 +2325,7 @@ let heartsAnimationId = null;
 const MAX_HEARTS = window.innerWidth < 768 ? 30 : 50;
 
 function initHeartsCanvas() {
+  if (!heartsCtx) return; // canvas not found, skip animation
   resizeHeartsCanvas();
   window.addEventListener('resize', resizeHeartsCanvas);
   if (!heartsAnimationId) {
@@ -2374,7 +2375,7 @@ function spawnHeart() {
 }
 
 function heartsLoop(timestamp) {
-  if (document.hidden) {
+  if (!heartsCtx || document.hidden) {
     heartsAnimationId = requestAnimationFrame(heartsLoop);
     return;
   }
