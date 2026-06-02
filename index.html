@@ -948,6 +948,27 @@ input[type="range"]::-webkit-slider-thumb {
       </button>
     </div>
 
+    <!-- 云同步 -->
+    <div class="settings-section">
+      <h3>☁️ 云同步</h3>
+      <div id="syncStatus" style="font-size:13px;margin-bottom:10px;color:var(--text-secondary)">
+        🔌 未配置同步
+      </div>
+      <div class="form-group">
+        <label class="form-label">同步密钥 (你们俩共享)</label>
+        <input type="password" class="form-input" id="syncTokenInput" placeholder="输入同步密钥激活云同步…">
+      </div>
+      <button class="btn btn-primary" style="margin-bottom:8px" onclick="setupSync()">
+        🔗 激活云同步
+      </button>
+      <button class="btn btn-secondary" style="margin-bottom:4px" onclick="syncNow()">
+        🔄 手动同步
+      </button>
+      <div style="font-size:10px;color:var(--text-muted);margin-top:8px">
+        💡 两个人用<u>同一个密钥</u>，照片日记实时同步
+      </div>
+    </div>
+
     <!-- 密码 -->
     <div class="settings-section">
       <h3>🔒 修改密码</h3>
@@ -1128,10 +1149,151 @@ async function hashPin(pin) {
   return hashArray.map(b => b.toString(16).padStart(2,'0')).join('');
 }
 
+// ── 云同步模块 (GitHub API) ──
+const CLOUD_REPO = 'susje86777-prog/love-data';
+const CLOUD_API = 'https://api.github.com/repos/' + CLOUD_REPO + '/contents';
+const SYNC_DATA_FILE = 'memories.json';
+
+function getSyncToken() { return localStorage.getItem('cloud_token') || ''; }
+function syncEnabled() { return !!getSyncToken(); }
+
+function updateSyncStatus() {
+  const el = $('#syncStatus');
+  const t = getSyncToken();
+  if (!t) { if (el) el.innerHTML = '🔌 未配置同步'; return; }
+  if (el) el.innerHTML = '☁️ 云同步已激活';
+}
+
+async function setupSync() {
+  const token = $('#syncTokenInput').value.trim();
+  if (!token) { showToast('请输入同步密钥', 'error'); return; }
+  try {
+    const resp = await fetch('https://api.github.com/user', {
+      headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json' }
+    });
+    if (!resp.ok) throw new Error('invalid');
+    localStorage.setItem('cloud_token', token);
+    $('#syncTokenInput').value = '';
+    updateSyncStatus();
+    showToast('☁️ 云同步已激活！', 'success');
+    await syncFromCloud();
+    refreshAll();
+  } catch (e) { showToast('密钥无效，请重试', 'error'); }
+}
+
+async function syncFromCloud() {
+  const token = getSyncToken();
+  if (!token) return;
+  try {
+    const resp = await fetch(CLOUD_API + '/' + SYNC_DATA_FILE, {
+      headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github.raw+json' }
+    });
+    if (!resp.ok) return;
+    const cloudData = await resp.json();
+    const local = await dbGetAll('memories', 'byDate', 'prev');
+    const localIds = new Set(local.map(m => m.id));
+    for (const cm of cloudData) {
+      if (!localIds.has(cm.id)) { await dbPut('memories', cm); }
+    }
+    updateSyncStatus();
+    console.log('☁️ 从云端同步了 ' + cloudData.length + ' 条记忆');
+  } catch (e) { console.log('No cloud data yet'); }
+}
+
+async function uploadToCloud(memory) {
+  const token = getSyncToken();
+  if (!token) return;
+  try {
+    let cloudData = [], sha = null;
+    try {
+      const r = await fetch(CLOUD_API + '/' + SYNC_DATA_FILE, {
+        headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json' }
+      });
+      if (r.ok) {
+        const ex = await r.json();
+        cloudData = JSON.parse(atob(ex.content));
+        sha = ex.sha;
+      }
+    } catch (e) {}
+
+    const clean = { ...memory };
+    delete clean.thumbnail; delete clean.fullImage;
+
+    const idx = cloudData.findIndex(m => m.id === clean.id);
+    if (idx >= 0) cloudData[idx] = clean;
+    else cloudData.push(clean);
+
+    const json = JSON.stringify(cloudData);
+    const b64 = btoa(unescape(encodeURIComponent(json)));
+    const body = { message: '💕 记忆 #' + memory.id, content: b64 };
+    if (sha) body.sha = sha;
+
+    await fetch(CLOUD_API + '/' + SYNC_DATA_FILE, {
+      method: 'PUT', headers: {
+        'Authorization': 'token ' + token,
+        'Accept': 'application/vnd.github+json',
+        'Content-Type': 'application/json'
+      }, body: JSON.stringify(body)
+    });
+
+    // 上传照片
+    if (memory.fullImage && memory.fullImage instanceof Blob) {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const imgB64 = e.target.result.split(',')[1];
+        let imgSha = null;
+        const path = 'photos/' + memory.id + '.jpg';
+        try {
+          const cr = await fetch(CLOUD_API + '/' + path, {
+            headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json' }
+          });
+          if (cr.ok) { const ex = await cr.json(); imgSha = ex.sha; }
+        } catch (ee) {}
+        const ib = { message: '📸 照片 #' + memory.id, content: imgB64 };
+        if (imgSha) ib.sha = imgSha;
+        await fetch(CLOUD_API + '/' + path, {
+          method: 'PUT', headers: {
+            'Authorization': 'token ' + token,
+            'Accept': 'application/vnd.github+json',
+            'Content-Type': 'application/json'
+          }, body: JSON.stringify(ib)
+        });
+      };
+      reader.readAsDataURL(memory.fullImage);
+    }
+  } catch (e) { console.error('Sync err:', e); }
+}
+
+async function syncNow() {
+  const token = getSyncToken();
+  if (!token) { showToast('请先在设置里配置同步密钥', 'info'); return; }
+  showToast('🔄 正在同步...', 'info');
+  const all = await dbGetAll('memories', 'byDate', 'prev');
+  const clean = all.map(m => { const c = { ...m }; delete c.thumbnail; delete c.fullImage; return c; });
+  const json = JSON.stringify(clean);
+  const b64 = btoa(unescape(encodeURIComponent(json)));
+  let sha = null;
+  try {
+    const r = await fetch(CLOUD_API + '/' + SYNC_DATA_FILE, {
+      headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json' }
+    });
+    if (r.ok) { const ex = await r.json(); sha = ex.sha; }
+  } catch (e) {}
+  const body = { message: '🔄 同步 (' + clean.length + '条)', content: b64 };
+  if (sha) body.sha = sha;
+  const resp = await fetch(CLOUD_API + '/' + SYNC_DATA_FILE, {
+    method: 'PUT', headers: {
+      'Authorization': 'token ' + token,
+      'Accept': 'application/vnd.github+json',
+      'Content-Type': 'application/json'
+    }, body: JSON.stringify(body)
+  });
+  if (resp.ok) { showToast('☁️ 同步完成！' + clean.length + ' 条记忆', 'success'); }
+  else { showToast('同步失败，请检查密钥', 'error'); }
+}
+
 // ══════════════════════════════════════════════════════════════
 // 4. IndexedDB
-// ══════════════════════════════════════════════════════════════
-function openDB() {
   return new Promise((resolve, reject) => {
     const req = indexedDB.open(DB_NAME, DB_VERSION);
     req.onupgradeneeded = (e) => {
@@ -1545,8 +1707,13 @@ async function saveMemory() {
     saveBtn.textContent = '💾 保存回忆';
 
     // 刷新
-    loadTimeline();
+    await loadTimeline();
     loadJournals();
+    // 云端同步（后台静默）：重新获取刚保存的最后一条
+    if (syncEnabled()) {
+      const all = await dbGetAll('memories', 'byDate', 'prev');
+      if (all.length > 0) { uploadToCloud(all[0]); }
+    }
   } catch (err) {
     if (err.name === 'QuotaExceededError') {
       showToast('存储空间不足，请删除一些旧照片', 'error');
@@ -1567,6 +1734,8 @@ let displayedCount = 0;
 
 async function loadTimeline() {
   try {
+    // 先尝试云端同步
+    if (syncEnabled()) { await syncFromCloud(); }
     allMemories = await dbGetAll('memories', 'byDate', 'prev');
     displayedCount = 0;
     renderTimelineBatch();
@@ -2319,7 +2488,10 @@ async function init() {
   console.log('💕 Love Memory 已就绪');
   console.log('  - 密码保护：' + (passwordHash ? '已设置' : '首次使用，请设置密码'));
   console.log('  - 纪念日：' + (annDate || '未设置，请在设置中配置'));
-  console.log('  - 爱心飘落动画已准备');
+  console.log('  - ☁️ 云同步：' + (getSyncToken() ? '已激活' : '请在设置中配置密钥'));
+  updateSyncStatus();
+  // 自动从云端同步
+  if (syncEnabled()) { syncFromCloud().then(() => loadTimeline()); }
 }
 
 // 全局函数暴露
@@ -2340,6 +2512,8 @@ window.exportData = exportData;
 window.deleteAllData = deleteAllData;
 window.filterJournals = filterJournals;
 window.installApp = installApp;
+window.setupSync = setupSync;
+window.syncNow = syncNow;
 window.resetApp = resetApp;
 
 // ── 注册 Service Worker（离线缓存 + 原生APP体验）──
