@@ -1372,7 +1372,7 @@ async function uploadToCloud(memory) {
 
     const clean = { ...memory };
     delete clean.thumbnail; delete clean.fullImage;
-    clean._hasImage = !!(memory.fullImage && memory.fullImage instanceof Blob);
+    clean._hasImage = !!memory.fullImage;
 
     const idx = cloudData.findIndex(m => m.id === clean.id);
     if (idx >= 0) cloudData[idx] = clean;
@@ -1427,7 +1427,7 @@ async function syncNow() {
   if (!token) { showToast('请先在设置里配置同步密钥', 'info'); return; }
   showToast('🔒 正在全量同步（含照片）...', 'info');
   const all = await dbGetAll('memories', 'byDate', 'prev');
-  const clean = all.map(m => { const c = { ...m }; delete c.thumbnail; delete c.fullImage; c._hasImage = !!(m.fullImage && m.fullImage instanceof Blob); return c; });
+  const clean = all.map(m => { const c = { ...m }; delete c.thumbnail; delete c.fullImage; c._hasImage = !!m.fullImage; return c; });
   const json = JSON.stringify(clean);
   const enc = await encryptData(json);
   let sha = null;
@@ -1866,17 +1866,18 @@ async function saveMemory() {
   saveBtn.disabled = true;
   saveBtn.textContent = '⏳ 保存中...';
 
+  let savedMemory = null;
   try {
     if (currentMode === 'photo') {
       if (editingMemoryId) {
-        // 编辑已有照片记忆
         const mem = await dbGet('memories', editingMemoryId);
         mem.date = date;
         mem.title = title;
         await dbPut('memories', mem);
+        savedMemory = mem;
       } else {
         if (!pendingPhotoBlob) { showToast('请选择一张照片 📷', 'error'); saveBtn.disabled = false; saveBtn.textContent = '💾 保存回忆'; return; }
-        await dbAdd('memories', {
+        const newId = await dbAdd('memories', {
           type: 'photo',
           date: date,
           title: title,
@@ -1886,6 +1887,7 @@ async function saveMemory() {
           imageFileName: pendingPhotoFile ? pendingPhotoFile.name : 'photo.jpg',
           createdAt: new Date().toISOString()
         });
+        savedMemory = await dbGet('memories', newId);
       }
       resetPhotoUpload();
     } else {
@@ -1897,8 +1899,9 @@ async function saveMemory() {
         mem.title = title;
         mem.content = content;
         await dbPut('memories', mem);
+        savedMemory = mem;
       } else {
-        await dbAdd('memories', {
+        const newId = await dbAdd('memories', {
           type: 'journal',
           date: date,
           title: title,
@@ -1907,6 +1910,7 @@ async function saveMemory() {
           fullImage: null,
           createdAt: new Date().toISOString()
         });
+        savedMemory = await dbGet('memories', newId);
       }
       $('#journalContent').value = '';
     }
@@ -1920,10 +1924,9 @@ async function saveMemory() {
     // 刷新
     await loadTimeline();
     loadJournals();
-    // 云端同步（后台静默）：重新获取刚保存的最后一条
-    if (syncEnabled()) {
-      const all = await dbGetAll('memories', 'byDate', 'prev');
-      if (all.length > 0) { uploadToCloud(all[0]); }
+    // 云端同步：直接上传刚保存的记忆对象，不重新查询
+    if (syncEnabled() && savedMemory) {
+      uploadToCloud(savedMemory);
     }
   } catch (err) {
     if (err.name === 'QuotaExceededError') {
@@ -1949,6 +1952,8 @@ async function loadTimeline() {
     if (syncEnabled()) { await syncFromCloud(); }
     allMemories = await dbGetAll('memories', 'byDate', 'prev');
     displayedCount = 0;
+    const container = $('#timelineContainer');
+    if (container) container.innerHTML = '';
     renderTimelineBatch();
   } catch (err) {
     console.error('加载时间轴失败:', err);
