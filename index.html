@@ -1252,6 +1252,9 @@ async function setupSync() {
     localStorage.setItem('cloud_token', token);
     $('#syncTokenInput').value = '';
     updateSyncStatus();
+    // 确保密码已设置，否则加密密钥无法派生
+    const pwHash = localStorage.getItem('passwordHash');
+    if (!pwHash) { showToast('请先设置锁屏密码再激活同步', 'error'); return; }
     getEncryptionKey(); // 触发盐值生成
     showToast('🔒 端到端加密同步已激活！', 'success');
     await syncFromCloud();
@@ -1275,11 +1278,13 @@ async function syncFromCloud() {
     const json = await decryptData(enc.iv, enc.data);
     const cloudData = JSON.parse(json);
     const local = await dbGetAll('memories', 'byDate', 'prev');
-    const localIds = new Set(local.map(m => m.id));
+    const localMap = new Map(local.map(m => [m.id, m]));
     for (const cm of cloudData) {
-      if (!localIds.has(cm.id)) {
-        // 如果有加密照片，下载并解密
-        if (cm._hasImage) {
+      const localItem = localMap.get(cm.id);
+      // 新增或云端更新的才同步
+      if (!localItem || (cm.createdAt && localItem.createdAt !== cm.createdAt)) {
+        // 如果有加密照片且本地没有，下载并解密
+        if (cm._hasImage && (!localItem || !localItem.fullImage)) {
           try {
             const imgResp = await fetch(CLOUD_API + '/photos/' + cm.id + '.enc', {
               headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json' }
@@ -1292,6 +1297,11 @@ async function syncFromCloud() {
               cm.thumbnail = await resizeBlob(blob, 300, 0.6);
             }
           } catch (e) { console.log('No photo for #' + cm.id + ':', e.message); }
+        }
+        if (localItem && !cm.fullImage) {
+          // 保留本地已有的照片（云端不存大文件）
+          cm.fullImage = localItem.fullImage;
+          cm.thumbnail = localItem.thumbnail;
         }
         await dbPut('memories', cm);
       }
@@ -1332,10 +1342,13 @@ async function uploadToCloud(memory) {
         headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json' }
       });
       if (r.ok) {
-        const ex = await r.json();
-        const json = await decryptData(ex.iv, ex.data);
+        const apiResp = await r.json();
+        // GitHub API 返回 { content: "base64...", sha: "..." }
+        const rawContent = atob(apiResp.content);
+        const enc = JSON.parse(rawContent);
+        const json = await decryptData(enc.iv, enc.data);
         cloudData = JSON.parse(json);
-        sha = ex.sha;
+        sha = apiResp.sha;
       }
     } catch (e) {}
 
@@ -1347,7 +1360,6 @@ async function uploadToCloud(memory) {
     if (idx >= 0) cloudData[idx] = clean;
     else cloudData.push(clean);
 
-    // 🔒 加密后上传 (content 必须是 base64 编码)
     const json = JSON.stringify(cloudData);
     const enc = await encryptData(json);
     const body = {
@@ -1364,7 +1376,7 @@ async function uploadToCloud(memory) {
       }, body: JSON.stringify(body)
     });
 
-    // 🔒 加密照片后上传 (content 必须 base64 编码)
+    // 🔒 加密照片后上传
     if (memory.fullImage && memory.fullImage instanceof Blob) {
       const encImg = await encryptBlob(memory.fullImage);
       let imgSha = null;
@@ -1397,7 +1409,7 @@ async function syncNow() {
   if (!token) { showToast('请先在设置里配置同步密钥', 'info'); return; }
   showToast('🔒 正在加密同步...', 'info');
   const all = await dbGetAll('memories', 'byDate', 'prev');
-  const clean = all.map(m => { const c = { ...m }; delete c.thumbnail; delete c.fullImage; c._hasImage = false; return c; });
+  const clean = all.map(m => { const c = { ...m }; delete c.thumbnail; delete c.fullImage; c._hasImage = !!(m.fullImage && m.fullImage instanceof Blob); return c; });
   const json = JSON.stringify(clean);
   const enc = await encryptData(json);
   let sha = null;
