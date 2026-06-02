@@ -138,9 +138,7 @@ a { color: var(--primary); text-decoration: none; }
   text-align: center;
   padding: 40px 30px;
   border-radius: 24px;
-  background: var(--glass);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background: rgba(20, 15, 30, 0.92);
   border: 1px solid var(--glass-border);
   box-shadow: var(--shadow-lg);
   max-width: 380px; width: 90%;
@@ -212,27 +210,26 @@ a { color: var(--primary); text-decoration: none; }
 .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 280px; margin: 0 auto; }
 
 .keypad button {
-  aspect-ratio: 1;
+  width: 70px; height: 70px;
   border-radius: 50%;
   font-size: 22px;
   font-weight: 600;
   color: var(--text);
-  background: var(--glass);
-  border: 1px solid var(--glass-border);
-  transition: all 0.15s ease;
+  background: rgba(255,255,255,0.08);
+  border: 2px solid var(--glass-border);
   display: flex; align-items: center; justify-content: center;
   touch-action: manipulation;
-  -webkit-touch-callout: none;
-  -webkit-tap-highlight-color: transparent;
-  min-width: 44px;
-  min-height: 44px;
+  -webkit-tap-highlight-color: rgba(255,255,255,0);
+  user-select: none;
+  -webkit-user-select: none;
+  margin: 0 auto;
+  cursor: pointer;
 }
 
 .keypad button:active {
-  background: var(--primary);
-  border-color: var(--primary);
-  transform: scale(0.9);
-  box-shadow: 0 0 20px rgba(255,107,129,0.4);
+  background: var(--primary) !important;
+  border-color: var(--primary) !important;
+  color: #fff;
 }
 
 .keypad .key-clear { font-size: 14px; color: var(--text-secondary); }
