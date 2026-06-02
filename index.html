@@ -2512,9 +2512,13 @@ document.addEventListener('keydown', (e) => {
 // 21. 事件委托
 // ══════════════════════════════════════════════════════════════
 
-// 键盘事件
-$('#keypad').addEventListener('click', (e) => {
-  const key = e.target.dataset.key;
+// 键盘事件 - 同时绑定 click 和 touchstart
+const keypadEl = document.getElementById('keypad');
+function handleKeypadTap(e) {
+  e.preventDefault();
+  const btn = e.target.closest('button');
+  if (!btn) return;
+  const key = btn.dataset.key;
   if (!key) return;
   if (key === 'clear') { clearPin(); return; }
   if (key === 'ok') { submitPin(); return; }
@@ -2523,7 +2527,9 @@ $('#keypad').addEventListener('click', (e) => {
     updatePinDots();
     if (pinInput.length === PIN_LENGTH) submitPin();
   }
-});
+}
+keypadEl.addEventListener('click', handleKeypadTap);
+keypadEl.addEventListener('touchend', handleKeypadTap);
 
 // Tab切换
 $('#tabBar').addEventListener('click', (e) => {
