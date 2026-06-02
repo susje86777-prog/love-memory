@@ -1,0 +1,22 @@
+{
+  "name": "Love Memory - 恋爱纪念",
+  "short_name": "Love Memory",
+  "description": "属于我们的私密回忆空间",
+  "start_url": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#ff6b81",
+  "background_color": "#0a0a12",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
