@@ -1953,7 +1953,9 @@ async function loadTimeline() {
     allMemories = await dbGetAll('memories', 'byDate', 'prev');
     displayedCount = 0;
     const container = $('#timelineContainer');
-    if (container) container.innerHTML = '';
+    if (container) {
+      container.innerHTML = '<div class="empty-state" id="timelineEmpty"><div class="empty-icon">📸</div><div class="empty-text">还没有回忆</div><div class="empty-hint">点击下方 + 添加你们的第一个瞬间</div></div>';
+    }
     renderTimelineBatch();
   } catch (err) {
     console.error('加载时间轴失败:', err);
@@ -2083,7 +2085,6 @@ async function loadJournals() {
 
 function renderJournalList(journals) {
   const container = $('#journalContainer');
-  const empty = $('#journalEmpty');
   const searchTerm = ($('#journalSearch').value || '').toLowerCase();
 
   const filtered = searchTerm
@@ -2092,12 +2093,14 @@ function renderJournalList(journals) {
         (j.content || '').toLowerCase().includes(searchTerm))
     : journals;
 
-  container.innerHTML = '';
+  container.innerHTML = '<div class="empty-state" id="journalEmpty"><div class="empty-icon">📖</div><div class="empty-text">还没有日记</div><div class="empty-hint">去添加页写下你的第一篇恋爱日记吧</div></div>';
+  const empty = $('#journalEmpty');
+
   if (filtered.length === 0) {
-    empty.style.display = '';
+    if (empty) empty.style.display = '';
     return;
   }
-  empty.style.display = 'none';
+  if (empty) empty.style.display = 'none';
 
   filtered.forEach((mem, i) => {
     const card = createMemoryCard(mem, i);
