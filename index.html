@@ -2045,14 +2045,19 @@ function closeDetail(e) {
 }
 
 async function deleteMemory(id) {
+  console.log('delete memory', id);
   if (!confirm('确定要删除这条回忆吗？')) return;
   try {
-    await dbDelete('memories', id || currentDetailId);
+    const targetId = id || currentDetailId;
+    console.log('before delete', targetId);
+    await dbDelete('memories', targetId);
+    console.log('after delete', targetId);
     showToast('回忆已删除', 'info');
     closeDetail();
-    refreshAll();
+    await refreshAll();
   } catch (err) {
     showToast('删除失败', 'error');
+    console.error('delete error', err);
   }
 }
 
