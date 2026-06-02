@@ -8,6 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Love Memory">
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='%23ff6b81' d='M462.3 62.6C407.5 15.9 326 24.3 275.7 76.2L256 96.5l-19.7-20.3C186.1 24.3 104.5 15.9 49.7 62.6c-62.8 53.6-66.1 149.8-9.9 207.9l193.5 199.8c12.5 12.9 32.8 12.9 45.3 0l193.5-199.8c56.3-58.1 53-154.3-9.8-207.9z'/%3E%3C/svg%3E">
+<link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkxvdmUgTWVtb3J5IiwKICAic2hvcnRfbmFtZSI6ICJMb3ZlIE1lbW9yeSIsCiAgInN0YXJ0X3VybCI6ICIuIiwKICAiZGlzcGxheSI6ICJzdGFuZGFsb25lIiwKICAidGhlbWVfY29sb3IiOiAiI2ZmNmI4MSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzBhMGExMiIsCiAgImljb25zIjogW3sKICAgICJzcmMiOiAiZGF0YTppbWFnZS9zdmcreG1sLCUzQ3N2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCA1MTIgNTEyJyUzRSUzQ3BhdGggZmlsbD0nJTIzZmY2YjgxJyBkJz1NNDYyLjMgNjIuNkM0MDcuNSAxNS45IDMyNiAyNC4zIDI3NS43IDc2LjJMMjU2IDk2LjVsLTE5LjctMjAuM0MxODYuMSAyNC4zIDEwNC41IDE1LjkgNDkuNyA2Mi42Yy02Mi44IDUzLjYtNjYuMSAxNDkuOC05LjkgMjA3LjlsMTkzLjUgMTk5LjhjMTIuNSAxMi45IDMyLjggMTIuOSA0NS4zIDBsMTkzLjUtMTk5LjhjNTYuMy01OC4xIDUzLTE1NC4zLTkuOC0yMDcuOXonLyUzRSUzQy9zdmclM0UiLAogICAgInNpemVzIjogIjUxMng1MTIiLAogICAgInR5cGUiOiAiaW1hZ2Uvc3ZnK3htbCIKICB9XQp9">
 <title>💕 Love Memory</title>
 <style>
 /* ══════════════════════════════════════════════════════════════
@@ -241,6 +242,41 @@ a { color: var(--primary); text-decoration: none; }
 }
 
 .lock-footer a:hover { opacity: 1; }
+
+.install-hint {
+  margin-top: 20px; padding: 14px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 14px;
+  border: 1px dashed rgba(255,255,255,0.15);
+}
+
+.install-hint-text { font-size: 12px; color: var(--text-secondary); margin-bottom: 10px; letter-spacing: 1px; }
+
+.btn-install {
+  display: block; width: 100%;
+  padding: 14px 20px;
+  border-radius: 25px;
+  font-size: 15px; font-weight: 700; letter-spacing: 1px;
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(76,175,80,0.3);
+  animation: pulseInstall 2s ease-in-out infinite;
+  transition: all 0.3s;
+}
+
+.btn-install:active { transform: scale(0.95); }
+
+@keyframes pulseInstall {
+  0%, 100% { box-shadow: 0 4px 16px rgba(76,175,80,0.3); }
+  50% { box-shadow: 0 4px 30px rgba(76,175,80,0.6); }
+}
+
+.install-manual { margin-top: 10px; }
+.install-manual details { color: var(--text-muted); font-size: 11px; cursor: pointer; }
+.install-manual summary { letter-spacing: 1px; padding: 4px 0; }
+.install-steps { padding: 8px 0; line-height: 1.8; }
+.install-steps p { margin: 4px 0; font-size: 11px; color: var(--text-secondary); }
+.install-steps b { color: var(--primary); }
 
 /* ══════════════════════════════════════════════════════════════
    应用主容器
@@ -754,6 +790,23 @@ input[type="range"]::-webkit-slider-thumb {
     <div class="lock-error" id="lockError"></div>
     <div class="lock-footer">
       <a id="forgotLink" style="display:none" onclick="resetApp()">忘记密码？(将清空所有数据)</a>
+    </div>
+    <div class="install-hint" id="installHint">
+      <div class="install-hint-text">📱 点下方按钮安装到手机桌面</div>
+      <button class="btn-install" id="installBtn" style="display:none" onclick="installApp()">
+        📲 添加至桌面（变APP）
+      </button>
+      <div class="install-manual" id="installManual">
+        <details>
+          <summary>📖 手动添加教程（点开）</summary>
+          <div class="install-steps">
+            <p><b>Chrome / Edge：</b>右上角 ⋮ → 添加到主屏幕</p>
+            <p><b>自带浏览器：</b>菜单 ≡ → 添加至桌面</p>
+            <p><b>华为浏览器：</b>中间 ··· → 添加到桌面</p>
+            <p><b>QQ浏览器：</b>中间菜单 → 添加到桌面</p>
+          </div>
+        </details>
+      </div>
     </div>
   </div>
 </div>
@@ -1355,6 +1408,31 @@ function tryAutoPlayMusic() {
   if (enabled && bgmAudio.src && bgmAudio.src !== window.location.href) {
     bgmAudio.play().catch(() => {});
   }
+}
+
+// ── PWA 安装 ──
+let deferredPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  const btn = $('#installBtn');
+  if (btn) btn.style.display = '';
+});
+
+async function installApp() {
+  if (!deferredPrompt) {
+    const manual = $('#installManual');
+    if (manual) { manual.querySelector('details').open = true; manual.scrollIntoView({behavior:'smooth'}); }
+    showToast('请展开下方教程，按步骤操作 📖', 'info');
+    return;
+  }
+  deferredPrompt.prompt();
+  const result = await deferredPrompt.userChoice;
+  if (result.outcome === 'accepted') {
+    showToast('安装成功！💕', 'success');
+  }
+  deferredPrompt = null;
 }
 
 function resetApp() {
@@ -2260,6 +2338,7 @@ window.changePassword = changePassword;
 window.exportData = exportData;
 window.deleteAllData = deleteAllData;
 window.filterJournals = filterJournals;
+window.installApp = installApp;
 window.resetApp = resetApp;
 
 // 启动应用
