@@ -1219,7 +1219,7 @@ async function decryptData(ivB64, dataB64) {
   return new TextDecoder().decode(plain);
 }
 
-// 加密 Blob → 返回加密后的 base64 + iv
+// 加密 Blob → 返回 base64 {iv, data}（大文件安全编码）
 async function encryptBlob(blob) {
   const key = await getEncryptionKey();
   const iv = crypto.getRandomValues(new Uint8Array(12));
@@ -1227,21 +1227,44 @@ async function encryptBlob(blob) {
   const ciphertext = await crypto.subtle.encrypt(
     { name: 'AES-GCM', iv }, key, arrayBuf
   );
+  const ctBytes = new Uint8Array(ciphertext);
   return {
     iv: btoa(String.fromCharCode(...iv)),
-    data: btoa(String.fromCharCode(...new Uint8Array(ciphertext)))
+    data: bufferToBase64(ctBytes)
   };
 }
 
-// 解密 base64 → Blob
+// 解密 base64 → Blob（大文件安全解码）
 async function decryptBlob(ivB64, dataB64, type = 'image/jpeg') {
   const key = await getEncryptionKey();
-  const iv = Uint8Array.from(atob(ivB64), c => c.charCodeAt(0));
-  const ciphertext = Uint8Array.from(atob(dataB64), c => c.charCodeAt(0));
+  const iv = base64ToBuffer(ivB64);
+  const ciphertext = base64ToBuffer(dataB64);
   const plain = await crypto.subtle.decrypt(
     { name: 'AES-GCM', iv }, key, ciphertext
   );
   return new Blob([plain], { type });
+}
+
+// 大文件安全：Uint8Array → Base64（分块避免栈溢出）
+function bufferToBase64(bytes) {
+  const len = bytes.length;
+  const chunkSize = 0x8000; // 32KB 每块
+  let result = '';
+  for (let i = 0; i < len; i += chunkSize) {
+    const chunk = bytes.subarray(i, Math.min(i + chunkSize, len));
+    result += String.fromCharCode.apply(null, chunk);
+  }
+  return btoa(result);
+}
+
+// Base64 → Uint8Array（分块解码）
+function base64ToBuffer(b64) {
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) {
+    bytes[i] = bin.charCodeAt(i);
+  }
+  return bytes;
 }
 
 async function setupSync() {
@@ -1410,7 +1433,9 @@ async function uploadToCloud(memory) {
 
     // 🔒 加密照片后上传（用 truthy 判断，不用 instanceof Blob）
     if (memory.fullImage) {
+      console.log('📸 uploadToCloud photo #' + memory.id);
       const encImg = await encryptBlob(memory.fullImage);
+      console.log('📸 encrypted #' + memory.id + ' data len:', encImg.data.length);
       let imgSha = null;
       const path = 'photos/' + memory.id + '.enc';
       try {
@@ -1419,18 +1444,25 @@ async function uploadToCloud(memory) {
         });
         if (cr.ok) { const ex = await cr.json(); imgSha = ex.sha; }
       } catch (ee) {}
+      const bodyJson = JSON.stringify(encImg);
       const ib = {
         message: '📸 照片 #' + memory.id,
-        content: btoa(JSON.stringify(encImg))
+        content: btoa(bodyJson)
       };
       if (imgSha) ib.sha = imgSha;
-      await fetch(CLOUD_API + '/' + path, {
+      const putResp = await fetch(CLOUD_API + '/' + path, {
         method: 'PUT', headers: {
           'Authorization': 'token ' + token,
           'Accept': 'application/vnd.github+json',
           'Content-Type': 'application/json'
         }, body: JSON.stringify(ib)
       });
+      if (putResp.ok) {
+        console.log('📸 uploadToCloud photo #' + memory.id + ' OK');
+      } else {
+        const eb = await putResp.text();
+        console.error('📸 uploadToCloud photo #' + memory.id + ' FAILED:', putResp.status, eb.substring(0,200));
+      }
     }
     console.log('🔒 已加密同步到云端: #' + memory.id);
   } catch (e) { console.error('Sync err:', e); }
@@ -1468,7 +1500,9 @@ async function syncNow() {
   for (const m of all) {
     if (m.fullImage) {
       try {
+        console.log('📸 encrypt photo #' + m.id, 'blob size:', (m.fullImage.size || m.fullImage.byteLength || '?'));
         const encImg = await encryptBlob(m.fullImage);
+        console.log('📸 photo #' + m.id + ' encrypted, data len:', encImg.data.length);
         let imgSha = null;
         const path = 'photos/' + m.id + '.enc';
         try {
@@ -1477,17 +1511,25 @@ async function syncNow() {
           });
           if (cr.ok) { const ex = await cr.json(); imgSha = ex.sha; }
         } catch (ee) {}
-        const ib = { message: '📸 照片 #' + m.id, content: btoa(JSON.stringify(encImg)) };
+        const bodyJson = JSON.stringify(encImg);
+        console.log('📸 photo #' + m.id + ' body JSON length:', bodyJson.length);
+        const ib = { message: '📸 照片 #' + m.id, content: btoa(bodyJson) };
         if (imgSha) ib.sha = imgSha;
-        await fetch(CLOUD_API + '/' + path, {
+        const putResp = await fetch(CLOUD_API + '/' + path, {
           method: 'PUT', headers: {
             'Authorization': 'token ' + token,
             'Accept': 'application/vnd.github+json',
             'Content-Type': 'application/json'
           }, body: JSON.stringify(ib)
         });
-        photoCount++;
-      } catch (e) { console.log('Photo upload fail #' + m.id, e.message); }
+        if (putResp.ok) {
+          console.log('📸 photo #' + m.id + ' uploaded OK');
+          photoCount++;
+        } else {
+          const eb = await putResp.text();
+          console.error('📸 photo #' + m.id + ' FAILED:', putResp.status, eb.substring(0,200));
+        }
+      } catch (e) { console.error('Photo upload fail #' + m.id, e.message, e.stack); }
     }
   }
   if (resp.ok) { showToast('✅ 同步完成！' + clean.length + '条记忆 + ' + photoCount + '张照片', 'success'); }
