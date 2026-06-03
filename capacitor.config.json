@@ -1,0 +1,9 @@
+{
+  "appId": "com.lovememory.app",
+  "appName": "Love Memory",
+  "webDir": "www",
+  "server": {
+    "url": "https://susje86777-prog.github.io/love-memory/",
+    "cleartext": true
+  }
+}

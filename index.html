@@ -3,62 +3,60 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#ff6b81">
+<meta name="theme-color" content="#f5c6d0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Love Memory">
-<link rel="apple-touch-icon" href="icon-192.png">
-<link rel="manifest" href="manifest.json">
-<meta name="mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cpath fill='%23ff6b81' d='M462.3 62.6C407.5 15.9 326 24.3 275.7 76.2L256 96.5l-19.7-20.3C186.1 24.3 104.5 15.9 49.7 62.6c-62.8 53.6-66.1 149.8-9.9 207.9l193.5 199.8c12.5 12.9 32.8 12.9 45.3 0l193.5-199.8c56.3-58.1 53-154.3-9.8-207.9z'/%3E%3C/svg%3E">
 <title>💕 Love Memory</title>
 <style>
 /* ══════════════════════════════════════════════════════════════
    CSS 自定义属性 (主题系统)
    ══════════════════════════════════════════════════════════════ */
 :root {
-  --primary: #ff6b81;
-  --primary-dark: #ee5a6f;
-  --secondary: #ffb8c6;
-  --accent: #ff4757;
-  --bg: #0a0a12;
-  --bg-card: rgba(255,255,255,0.08);
-  --bg-card-hover: rgba(255,255,255,0.14);
-  --glass: rgba(255,255,255,0.06);
-  --glass-border: rgba(255,255,255,0.12);
-  --text: #f0e6e8;
-  --text-secondary: #b8a0a8;
-  --text-muted: #7a6670;
-  --shadow: 0 8px 32px rgba(0,0,0,0.4);
-  --shadow-lg: 0 16px 48px rgba(0,0,0,0.5);
-  --radius: 16px;
-  --radius-sm: 10px;
-  --radius-xs: 8px;
+  --primary: #e8a0b0;
+  --primary-dark: #d4869a;
+  --secondary: #f5c6d0;
+  --accent: #c97a8f;
+  --bg: #fdf6f0;
+  --bg-card: rgba(255,255,255,0.75);
+  --bg-card-hover: rgba(255,255,255,0.92);
+  --glass: rgba(255,255,255,0.55);
+  --glass-border: rgba(232,160,176,0.25);
+  --text: #5a3e46;
+  --text-secondary: #8c6472;
+  --text-muted: #b89aa4;
+  --shadow: 0 8px 32px rgba(200,140,160,0.15);
+  --shadow-lg: 0 16px 48px rgba(200,140,160,0.22);
+  --radius: 20px;
+  --radius-sm: 14px;
+  --radius-xs: 10px;
   --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  --font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font: 'PingFang SC', 'Segoe UI', system-ui, -apple-system, sans-serif;
 }
 
 [data-theme="blush"] {
-  --primary: #f8a4c8;
-  --primary-dark: #e893b6;
-  --secondary: #fcd5e4;
-  --accent: #e8879e;
-  --bg: #1a0a14;
+  --primary: #f0a0b8;
+  --primary-dark: #db8ea6;
+  --secondary: #f8d0dc;
+  --accent: #d4788e;
+  --bg: #fde0ec;
 }
 
 [data-theme="lavender"] {
-  --primary: #b8a9c9;
-  --primary-dark: #a695ba;
-  --secondary: #d4c5e2;
-  --accent: #9b7db5;
-  --bg: #0f0c1a;
+  --primary: #b8a8d0;
+  --primary-dark: #a494be;
+  --secondary: #d8cce8;
+  --accent: #9880b8;
+  --bg: #f8f5fc;
 }
 
 [data-theme="sunset"] {
-  --primary: #ff9a76;
-  --primary-dark: #f08a65;
-  --secondary: #ffc3a0;
-  --accent: #ff6f3c;
-  --bg: #1a0e08;
+  --primary: #f0a888;
+  --primary-dark: #dc9474;
+  --secondary: #f8cdb8;
+  --accent: #d4826a;
+  --bg: #fff8f4;
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -70,7 +68,7 @@ html, body {
   width: 100%; height: 100%;
   overflow: hidden;
   font-family: var(--font);
-  background: var(--bg);
+  background: linear-gradient(145deg, #fdf0f3 0%, #fef6ee 50%, #f8f0fc 100%);
   color: var(--text);
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
@@ -112,8 +110,9 @@ a { color: var(--primary); text-decoration: none; }
 
 .bg-overlay {
   position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-  background: radial-gradient(ellipse at 50% 0%, rgba(255,107,129,0.08) 0%, transparent 60%),
-              radial-gradient(ellipse at 80% 80%, rgba(180,130,200,0.06) 0%, transparent 50%);
+  background: radial-gradient(ellipse at 20% 10%, rgba(248,210,220,0.45) 0%, transparent 55%),
+              radial-gradient(ellipse at 85% 85%, rgba(220,200,240,0.3) 0%, transparent 50%),
+              radial-gradient(ellipse at 50% 50%, rgba(255,245,235,0.2) 0%, transparent 70%);
   pointer-events: none; z-index: 0;
 }
 
@@ -137,12 +136,16 @@ a { color: var(--primary); text-decoration: none; }
 .lock-card {
   text-align: center;
   padding: 40px 30px;
-  border-radius: 24px;
-  background: rgba(20, 15, 30, 0.92);
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--shadow-lg);
+  border-radius: 28px;
+  background: rgba(255,255,255,0.82);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(232,160,176,0.3);
+  box-shadow: 0 20px 60px rgba(200,140,160,0.18), 0 4px 16px rgba(200,140,160,0.1);
   max-width: 380px; width: 90%;
   animation: lockIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
 }
 
 @keyframes lockIn {
@@ -190,12 +193,12 @@ a { color: var(--primary); text-decoration: none; }
 .pin-dot.filled {
   background: var(--primary);
   border-color: var(--primary);
-  box-shadow: 0 0 16px rgba(255,107,129,0.5);
+  box-shadow: 0 0 16px rgba(232,160,176,0.5);
   transform: scale(1.2);
 }
 
 .pin-dot.error {
-  background: #ff4757; border-color: #ff4757;
+  background: #d4849a; border-color: #ff4757;
   animation: shake 0.5s ease;
 }
 
@@ -210,30 +213,26 @@ a { color: var(--primary); text-decoration: none; }
 .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 280px; margin: 0 auto; }
 
 .keypad button {
-  width: 70px; height: 70px;
+  aspect-ratio: 1;
   border-radius: 50%;
   font-size: 22px;
   font-weight: 600;
   color: var(--text);
-  background: rgba(255,255,255,0.08);
-  border: 2px solid var(--glass-border);
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  transition: all 0.15s ease;
   display: flex; align-items: center; justify-content: center;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: rgba(255,255,255,0);
-  user-select: none;
-  -webkit-user-select: none;
-  margin: 0 auto;
-  cursor: pointer;
 }
 
 .keypad button:active {
-  background: var(--primary) !important;
-  border-color: var(--primary) !important;
-  color: #fff;
+  background: var(--primary);
+  border-color: var(--primary);
+  transform: scale(0.9);
+  box-shadow: 0 0 20px rgba(232,160,176,0.4);
 }
 
 .keypad .key-clear { font-size: 14px; color: var(--text-secondary); }
-.keypad .key-ok { font-size: 14px; color: var(--primary); font-weight: 700; background: rgba(255,107,129,0.15); }
+.keypad .key-ok { font-size: 14px; color: var(--primary); font-weight: 700; background: rgba(232,160,176,0.15); }
 
 .lock-error { color: #ff4757; font-size: 12px; margin-top: 16px; min-height: 18px; letter-spacing: 1px; }
 .lock-footer { margin-top: 20px; }
@@ -245,41 +244,6 @@ a { color: var(--primary); text-decoration: none; }
 }
 
 .lock-footer a:hover { opacity: 1; }
-
-.install-hint {
-  margin-top: 20px; padding: 14px;
-  background: rgba(255,255,255,0.04);
-  border-radius: 14px;
-  border: 1px dashed rgba(255,255,255,0.15);
-}
-
-.install-hint-text { font-size: 12px; color: var(--text-secondary); margin-bottom: 10px; letter-spacing: 1px; }
-
-.btn-install {
-  display: block; width: 100%;
-  padding: 14px 20px;
-  border-radius: 25px;
-  font-size: 15px; font-weight: 700; letter-spacing: 1px;
-  background: linear-gradient(135deg, #4CAF50, #45a049);
-  color: #fff;
-  box-shadow: 0 4px 16px rgba(76,175,80,0.3);
-  animation: pulseInstall 2s ease-in-out infinite;
-  transition: all 0.3s;
-}
-
-.btn-install:active { transform: scale(0.95); }
-
-@keyframes pulseInstall {
-  0%, 100% { box-shadow: 0 4px 16px rgba(76,175,80,0.3); }
-  50% { box-shadow: 0 4px 30px rgba(76,175,80,0.6); }
-}
-
-.install-manual { margin-top: 10px; }
-.install-manual details { color: var(--text-muted); font-size: 11px; cursor: pointer; }
-.install-manual summary { letter-spacing: 1px; padding: 4px 0; }
-.install-steps { padding: 8px 0; line-height: 1.8; }
-.install-steps p { margin: 4px 0; font-size: 11px; color: var(--text-secondary); }
-.install-steps b { color: var(--primary); }
 
 /* ══════════════════════════════════════════════════════════════
    应用主容器
@@ -297,12 +261,13 @@ a { color: var(--primary); text-decoration: none; }
   position: fixed; bottom: 0; left: 0; right: 0;
   height: 72px;
   display: flex; align-items: center; justify-content: space-around;
-  background: rgba(10,10,18,0.85);
+  background: rgba(255,252,250,0.88);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-top: 1px solid var(--glass-border);
+  border-top: 1px solid rgba(232,160,176,0.2);
   z-index: 100;
   padding-bottom: env(safe-area-inset-bottom, 0px);
+  box-shadow: 0 -4px 20px rgba(200,140,160,0.08);
 }
 
 .tab-btn {
@@ -346,16 +311,16 @@ a { color: var(--primary); text-decoration: none; }
    ══════════════════════════════════════════════════════════════ */
 .anniversary-banner {
   text-align: center; padding: 24px 20px;
-  margin-bottom: 20px; border-radius: 20px;
-  background: #FFF5EE;
-  border: 1px solid rgba(255,182,193,0.35);
-  box-shadow: 0 4px 24px rgba(89,73,71,0.10), 0 2px 8px rgba(89,73,71,0.05);
+  margin-bottom: 20px; border-radius: 24px;
+  background: linear-gradient(135deg, rgba(232,160,176,0.15), rgba(255,184,198,0.08));
+  border: 1px solid rgba(232,160,176,0.2);
+  backdrop-filter: blur(10px);
 }
 
 .anniversary-banner .days-count {
   font-size: 48px; font-weight: 800;
-  background: linear-gradient(135deg, #FFB6C1, #FF9AAE, #E8A0B0, #FFB6C1);
-  background-size: 300% auto;
+  background: linear-gradient(135deg, #c97a8f, #ffb8c6, #c97a8f);
+  background-size: 200% auto;
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
   background-clip: text;
   animation: shimmer 3s ease-in-out infinite;
@@ -366,8 +331,8 @@ a { color: var(--primary); text-decoration: none; }
   50% { background-position: 200% center; }
 }
 
-.anniversary-banner .days-label { font-size: 14px; color: #594947; letter-spacing: 2px; margin-top: 4px; }
-.anniversary-banner .next-milestone { font-size: 12px; color: #8B6E6B; margin-top: 8px; }
+.anniversary-banner .days-label { font-size: 14px; color: var(--text-secondary); letter-spacing: 2px; margin-top: 4px; }
+.anniversary-banner .next-milestone { font-size: 12px; color: var(--text-muted); margin-top: 8px; }
 
 /* ══════════════════════════════════════════════════════════════
    时间轴卡片
@@ -433,7 +398,7 @@ a { color: var(--primary); text-decoration: none; }
 .card-type-badge {
   display: inline-flex; align-items: center; gap: 4px;
   font-size: 10px; padding: 3px 8px; border-radius: 20px;
-  background: rgba(255,107,129,0.15); color: var(--primary);
+  background: rgba(232,160,176,0.15); color: var(--primary);
   letter-spacing: 1px;
 }
 
@@ -473,7 +438,7 @@ a { color: var(--primary); text-decoration: none; }
 
 .segment-btn.active {
   background: var(--primary); color: #fff;
-  box-shadow: 0 4px 16px rgba(255,107,129,0.3);
+  box-shadow: 0 4px 16px rgba(232,160,176,0.3);
 }
 
 .upload-zone {
@@ -485,7 +450,7 @@ a { color: var(--primary); text-decoration: none; }
 
 .upload-zone:hover, .upload-zone.drag-over {
   border-color: var(--primary);
-  background: rgba(255,107,129,0.08);
+  background: rgba(232,160,176,0.08);
 }
 
 .upload-zone .upload-icon { font-size: 48px; margin-bottom: 8px; }
@@ -506,7 +471,7 @@ a { color: var(--primary); text-decoration: none; }
   font-size: 15px; transition: all 0.3s ease;
 }
 
-.form-input:focus, .form-textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(255,107,129,0.1); }
+.form-input:focus, .form-textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(232,160,176,0.1); }
 .form-textarea { min-height: 120px; resize: vertical; line-height: 1.6; }
 
 .btn {
@@ -518,10 +483,10 @@ a { color: var(--primary); text-decoration: none; }
 
 .btn-primary {
   background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-  color: #fff; box-shadow: 0 4px 20px rgba(255,107,129,0.3);
+  color: #fff; box-shadow: 0 4px 20px rgba(232,160,176,0.3);
 }
 
-.btn-primary:hover { box-shadow: 0 6px 24px rgba(255,107,129,0.45); transform: translateY(-1px); }
+.btn-primary:hover { box-shadow: 0 6px 24px rgba(232,160,176,0.45); transform: translateY(-1px); }
 .btn-primary:active { transform: scale(0.97); }
 .btn-primary:disabled { opacity: 0.5; pointer-events: none; }
 
@@ -606,7 +571,7 @@ input[type="range"] {
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none; width: 22px; height: 22px;
   border-radius: 50%; background: var(--primary);
-  cursor: pointer; box-shadow: 0 0 10px rgba(255,107,129,0.4);
+  cursor: pointer; box-shadow: 0 0 10px rgba(232,160,176,0.4);
 }
 
 /* 主题选择器 */
@@ -628,7 +593,7 @@ input[type="range"]::-webkit-slider-thumb {
 .modal-overlay {
   position: fixed; top: 0; left: 0; width: 100%; height: 100%;
   z-index: 200;
-  background: rgba(0,0,0,0.75);
+  background: rgba(180,140,155,0.35);
   backdrop-filter: blur(8px);
   display: flex; align-items: center; justify-content: center;
   animation: fadeIn 0.25s ease;
@@ -638,13 +603,13 @@ input[type="range"]::-webkit-slider-thumb {
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 .modal-content {
-  background: rgba(20,20,35,0.95);
+  background: rgba(255,252,250,0.96);
   backdrop-filter: blur(20px);
-  border: 1px solid var(--glass-border);
+  border: 1px solid rgba(232,160,176,0.2);
   border-radius: var(--radius);
   max-width: 600px; width: 100%; max-height: 85vh;
   overflow-y: auto; padding: 24px;
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 20px 60px rgba(180,120,140,0.2);
   animation: modalIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
@@ -689,7 +654,7 @@ input[type="range"]::-webkit-slider-thumb {
   box-shadow: var(--shadow);
 }
 
-.toast.success { background: #2ed573; color: #fff; }
+.toast.success { background: #7dbfa0; color: #fff; }
 .toast.error { background: #ff4757; color: #fff; }
 .toast.info { background: var(--primary); color: #fff; }
 
@@ -712,7 +677,7 @@ input[type="range"]::-webkit-slider-thumb {
 }
 
 .music-fab:hover { background: var(--bg-card-hover); }
-.music-fab.playing { background: var(--primary); border-color: var(--primary); color: #fff; box-shadow: 0 0 20px rgba(255,107,129,0.5); }
+.music-fab.playing { background: var(--primary); border-color: var(--primary); color: #fff; box-shadow: 0 0 20px rgba(232,160,176,0.5); }
 
 /* ══════════════════════════════════════════════════════════════
    爱心爆发动画 (CSS)
@@ -770,38 +735,29 @@ input[type="range"]::-webkit-slider-thumb {
 <canvas id="heartsCanvas"></canvas>
 
 <!-- ════════════════════════════════════════════════════════════
-   密码锁屏 - 极简可靠版
+   密码锁屏
    ════════════════════════════════════════════════════════════ -->
 <div id="lockScreen" class="lock-screen">
-  <div style="text-align:center;padding:40px 30px;border-radius:24px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);max-width:380px;width:90%;">
-    <div style="font-size:56px;margin-bottom:12px;">💕</div>
-    <div style="font-size:24px;font-weight:700;margin-bottom:8px;color:#ff6b81;letter-spacing:2px;" id="lockTitle">Love Memory</div>
-    <div style="font-size:13px;color:#7a6670;margin-bottom:28px;" id="lockSubtitle">输入密码解锁你的回忆</div>
-    <div id="pinDots" style="display:flex;justify-content:center;gap:14px;margin-bottom:28px;">
-      <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
-      <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+  <div class="lock-card">
+    <div class="lock-icon">💕</div>
+    <div class="lock-title" id="lockTitle">Love Memory</div>
+    <div class="lock-subtitle" id="lockSubtitle">输入密码解锁你的回忆</div>
+    <div class="pin-display" id="pinDisplay">
+      <div class="pin-dot"></div><div class="pin-dot"></div>
+      <div class="pin-dot"></div><div class="pin-dot"></div>
+      <div class="pin-dot"></div><div class="pin-dot"></div>
     </div>
-    <div id="pinKeys" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;max-width:280px;margin:0 auto;">
-      <button onclick="pinPress('1')" style="width:100%;aspect-ratio:1;border-radius:50%;font-size:22px;font-weight:600;color:#f0e6e8;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.12);cursor:pointer;touch-action:manipulation;">1</button>
-      <button onclick="pinPress('2')" style="width:100%;aspect-ratio:1;border-radius:50%;font-size:22px;font-weight:600;color:#f0e6e8;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.12);cursor:pointer;touch-action:manipulation;">2</button>
-      <button onclick="pinPress('3')" style="width:100%;aspect-ratio:1;border-radius:50%;font-size:22px;font-weight:600;color:#f0e6e8;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.12);cursor:pointer;touch-action:manipulation;">3</button>
-      <button onclick="pinPress('4')" style="width:100%;aspect-ratio:1;border-radius:50%;font-size:22px;font-weight:600;color:#f0e6e8;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.12);cursor:pointer;touch-action:manipulation;">4</button>
-      <button onclick="pinPress('5')" style="width:100%;aspect-ratio:1;border-radius:50%;font-size:22px;font-weight:600;color:#f0e6e8;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.12);cursor:pointer;touch-action:manipulation;">5</button>
-      <button onclick="pinPress('6')" style="width:100%;aspect-ratio:1;border-radius:50%;font-size:22px;font-weight:600;color:#f0e6e8;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.12);cursor:pointer;touch-action:manipulation;">6</button>
-      <button onclick="pinPress('7')" style="width:100%;aspect-ratio:1;border-radius:50%;font-size:22px;font-weight:600;color:#f0e6e8;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.12);cursor:pointer;touch-action:manipulation;">7</button>
-      <button onclick="pinPress('8')" style="width:100%;aspect-ratio:1;border-radius:50%;font-size:22px;font-weight:600;color:#f0e6e8;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.12);cursor:pointer;touch-action:manipulation;">8</button>
-      <button onclick="pinPress('9')" style="width:100%;aspect-ratio:1;border-radius:50%;font-size:22px;font-weight:600;color:#f0e6e8;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.12);cursor:pointer;touch-action:manipulation;">9</button>
-      <button onclick="pinPress('clear')" style="width:100%;aspect-ratio:1;border-radius:50%;font-size:14px;font-weight:600;color:#8a6a7a;background:rgba(255,255,255,0.03);border:2px solid rgba(255,255,255,0.08);cursor:pointer;touch-action:manipulation;">清除</button>
-      <button onclick="pinPress('0')" style="width:100%;aspect-ratio:1;border-radius:50%;font-size:22px;font-weight:600;color:#f0e6e8;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.12);cursor:pointer;touch-action:manipulation;">0</button>
-      <button onclick="pinPress('ok')" style="width:100%;aspect-ratio:1;border-radius:50%;font-size:14px;font-weight:700;color:#ff6b81;background:rgba(255,107,129,0.15);border:2px solid rgba(255,107,129,0.2);cursor:pointer;touch-action:manipulation;">确定</button>
+    <div class="keypad" id="keypad">
+      <button data-key="1">1</button><button data-key="2">2</button><button data-key="3">3</button>
+      <button data-key="4">4</button><button data-key="5">5</button><button data-key="6">6</button>
+      <button data-key="7">7</button><button data-key="8">8</button><button data-key="9">9</button>
+      <button class="key-clear" data-key="clear">清除</button>
+      <button data-key="0">0</button>
+      <button class="key-ok" data-key="ok">确定</button>
     </div>
-    <div id="lockMsg" style="color:#ff4757;font-size:12px;margin-top:16px;min-height:18px;"></div>
-    <div style="margin-top:20px;">
-      <a id="forgotLink" style="display:none;font-size:11px;color:#7a6670;cursor:pointer;text-decoration:underline;" onclick="resetApp()">忘记密码？(将清空所有数据)</a>
-    </div>
-    <div id="installHint" style="margin-top:16px;padding:14px;background:rgba(255,255,255,0.04);border-radius:14px;border:1px dashed rgba(255,255,255,0.15);">
-      <div style="font-size:12px;color:#b8a0a8;margin-bottom:10px;">📱 点下方按钮安装到手机桌面</div>
-      <button id="installBtn" style="display:none;width:100%;padding:14px;border-radius:25px;font-size:15px;font-weight:700;background:linear-gradient(135deg,#4CAF50,#45a049);color:#fff;border:none;cursor:pointer;" onclick="installApp()">📲 添加至桌面（变APP）</button>
+    <div class="lock-error" id="lockError"></div>
+    <div class="lock-footer">
+      <a id="forgotLink" style="display:none" onclick="resetApp()">忘记密码？(将清空所有数据)</a>
     </div>
   </div>
 </div>
@@ -911,7 +867,7 @@ input[type="range"]::-webkit-slider-thumb {
     <div class="settings-section">
       <h3>🌈 配色方案</h3>
       <div class="theme-options">
-        <div class="theme-dot" data-theme-val="" style="background:#ff6b81;color:#ff6b81" onclick="setTheme('')" title="暖粉"></div>
+        <div class="theme-dot" data-theme-val="" style="background:#c97a8f;color:#c97a8f" onclick="setTheme('')" title="暖粉"></div>
         <div class="theme-dot" data-theme-val="blush" style="background:#f8a4c8;color:#f8a4c8" onclick="setTheme('blush')" title="腮红"></div>
         <div class="theme-dot" data-theme-val="lavender" style="background:#b8a9c9;color:#b8a9c9" onclick="setTheme('lavender')" title="薰衣草"></div>
         <div class="theme-dot" data-theme-val="sunset" style="background:#ff9a76;color:#ff9a76" onclick="setTheme('sunset')" title="日落"></div>
@@ -940,33 +896,6 @@ input[type="range"]::-webkit-slider-thumb {
       <button class="btn btn-primary" style="margin-top:12px" onclick="toggleMusic()" id="musicToggleBtn">
         ▶️ 播放音乐
       </button>
-    </div>
-
-    <!-- 云同步 -->
-    <div class="settings-section">
-      <h3>☁️ 云同步</h3>
-      <div id="syncStatus" style="font-size:13px;margin-bottom:10px;color:var(--text-secondary)">
-        🔌 未配置同步
-      </div>
-      <div class="form-group">
-        <label class="form-label">同步密钥 (你们俩共享)</label>
-        <input type="password" class="form-input" id="syncTokenInput" placeholder="输入同步密钥激活云同步…">
-      </div>
-      <button class="btn btn-primary" style="margin-bottom:8px" onclick="setupSync()">
-        🔗 激活云同步
-      </button>
-      <button class="btn btn-secondary" style="margin-bottom:4px" onclick="syncNow()">
-        🔄 上传到云端
-      </button>
-      <button class="btn btn-secondary" style="margin-bottom:4px" onclick="pullFromCloud()">
-        📥 从云端下载
-      </button>
-      <button class="btn btn-danger" style="font-size:12px;margin-top:4px" onclick="resetCloud()">
-        🗑️ 清除云端（重新开始）
-      </button>
-      <div style="font-size:10px;color:var(--text-muted);margin-top:8px">
-        💡 两个人用<u>同一个密钥</u>，照片日记实时同步
-      </div>
     </div>
 
     <!-- 密码 -->
@@ -1005,7 +934,7 @@ input[type="range"]::-webkit-slider-thumb {
       <div class="modal-body" id="modalBody"></div>
       <div class="modal-actions">
         <button class="btn btn-secondary" id="modalEditBtn" onclick="editMemory()">✏️ 编辑</button>
-        <button class="btn btn-danger" id="modalDeleteBtn" onclick="deleteMemory(document.getElementById('detailModal')._memoryId)">🗑️ 删除</button>
+        <button class="btn btn-danger" id="modalDeleteBtn" onclick="deleteMemory()">🗑️ 删除</button>
       </div>
     </div>
   </div>
@@ -1053,14 +982,14 @@ const ITEMS_PER_PAGE = 20;
 const PIN_LENGTH = 6;
 
 const PRESETS = {
-  'gradient-rose':    'radial-gradient(ellipse at 30% 20%, #3a1020 0%, #1a0510 50%, #0a0a12 100%)',
-  'velvet-night':     'radial-gradient(ellipse at 70% 30%, #2c003e 0%, #150020 40%, #0a0a12 100%)',
-  'blush-petals':     'radial-gradient(ellipse at 50% 0%, #2d1520 0%, #1a0a14 45%, #0a0a12 100%)',
-  'starry-sky':       'radial-gradient(ellipse at 20% 80%, #0f0c29 0%, #1a1040 30%, #0a0a12 100%)',
-  'golden-hour':      'radial-gradient(ellipse at 80% 20%, #2d1a08 0%, #1a0f05 40%, #0a0a12 100%)',
-  'cherry-blossom':   'radial-gradient(ellipse at 50% 10%, #301520 0%, #1a0d15 35%, #0a0a12 100%)',
-  'lavender-dream':   'radial-gradient(ellipse at 60% 30%, #1a1028 0%, #110d1f 40%, #0a0a12 100%)',
-  'sunset-kiss':      'radial-gradient(ellipse at 40% 70%, #2a1008 0%, #180a06 35%, #0a0a12 100%)',
+  'gradient-rose':    'radial-gradient(ellipse at 30% 20%, #fde8ee 0%, #f8d8e4 50%, #fdf0f5 100%)',
+  'velvet-night':     'radial-gradient(ellipse at 70% 30%, #ede8f8 0%, #e0d8f4 40%, #0a0a12 100%)',
+  'blush-petals':     'radial-gradient(ellipse at 50% 0%, #feeef4 0%, #1a0a14 45%, #0a0a12 100%)',
+  'starry-sky':       'radial-gradient(ellipse at 20% 80%, #e8eef8 0%, #d8e4f4 30%, #0a0a12 100%)',
+  'golden-hour':      'radial-gradient(ellipse at 80% 20%, #fef4e8 0%, #fdecd4 40%, #0a0a12 100%)',
+  'cherry-blossom':   'radial-gradient(ellipse at 50% 10%, #feeef4 0%, #fddde8 35%, #0a0a12 100%)',
+  'lavender-dream':   'radial-gradient(ellipse at 60% 30%, #f0eef8 0%, #e8e4f4 40%, #0a0a12 100%)',
+  'sunset-kiss':      'radial-gradient(ellipse at 40% 70%, #fef4ec 0%, #fde8d4 35%, #0a0a12 100%)',
 };
 
 // ══════════════════════════════════════════════════════════════
@@ -1072,12 +1001,12 @@ const $$ = (sel) => document.querySelectorAll(sel);
 const lockScreen = $('#lockScreen');
 const lockTitle = $('#lockTitle');
 const lockSubtitle = $('#lockSubtitle');
-const pinDisplay = $('#pinDots');
-const lockError = $('#lockMsg');
+const pinDisplay = $('#pinDisplay');
+const lockError = $('#lockError');
 const forgotLink = $('#forgotLink');
 const appContainer = $('#appContainer');
 const heartsCanvas = $('#heartsCanvas');
-const heartsCtx = heartsCanvas ? heartsCanvas.getContext('2d') : null;
+const heartsCtx = heartsCanvas.getContext('2d');
 const bgmAudio = $('#bgmAudio');
 const musicFAB = $('#musicFAB');
 
@@ -1149,358 +1078,9 @@ async function hashPin(pin) {
   return hashArray.map(b => b.toString(16).padStart(2,'0')).join('');
 }
 
-// ── 云同步模块 (GitHub API + AES-GCM 端到端加密) ──
-const CLOUD_REPO = 'susje86777-prog/love-data';
-const CLOUD_API = 'https://api.github.com/repos/' + CLOUD_REPO + '/contents';
-const SYNC_DATA_FILE = 'memories.enc';
-
-function getSyncToken() { return localStorage.getItem('cloud_token') || ''; }
-function syncEnabled() { return !!getSyncToken(); }
-
-function updateSyncStatus() {
-  const el = $('#syncStatus');
-  const t = getSyncToken();
-  if (!t) { if (el) el.innerHTML = '🔌 未配置同步'; return; }
-  if (el) el.innerHTML = '🔒 端到端加密同步已激活（云端为密文）';
-}
-
-// ── 加密核心 ──
-// 从锁屏密码哈希派生 AES-GCM 密钥
-async function getEncryptionKey() {
-  const pwHash = localStorage.getItem('passwordHash');
-  if (!pwHash) throw new Error('No password hash');
-  const salt = getEncryptionSalt();
-  // PBKDF2 派生 256-bit AES 密钥
-  const enc = new TextEncoder();
-  const keyMaterial = await crypto.subtle.importKey(
-    'raw', enc.encode(pwHash), 'PBKDF2', false, ['deriveKey']
-  );
-  return crypto.subtle.deriveKey(
-    { name: 'PBKDF2', salt: enc.encode(salt), iterations: 200000, hash: 'SHA-256' },
-    keyMaterial, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']
-  );
-}
-
-function getEncryptionSalt() {
-  let salt = localStorage.getItem('enc_salt');
-  // 如果盐值不是从密码哈希派生的（旧版随机盐），重新生成
-  const pwHash = localStorage.getItem('passwordHash') || 'default';
-  const expectedSalt = pwHash.substring(0, 32);
-  if (!salt || salt !== expectedSalt) {
-    salt = expectedSalt;
-    localStorage.setItem('enc_salt', salt);
-    console.log('🔑 加密盐值已同步');
-  }
-  return salt;
-}
-
-// AES-GCM 加密 → 返回 { iv, ciphertext } (base64)
-async function encryptData(plaintext) {
-  const key = await getEncryptionKey();
-  const iv = crypto.getRandomValues(new Uint8Array(12)); // 96-bit IV
-  const enc = new TextEncoder();
-  const ciphertext = await crypto.subtle.encrypt(
-    { name: 'AES-GCM', iv }, key, enc.encode(plaintext)
-  );
-  return {
-    iv: btoa(String.fromCharCode(...iv)),
-    data: btoa(String.fromCharCode(...new Uint8Array(ciphertext)))
-  };
-}
-
-// AES-GCM 解密
-async function decryptData(ivB64, dataB64) {
-  const key = await getEncryptionKey();
-  const iv = Uint8Array.from(atob(ivB64), c => c.charCodeAt(0));
-  const ciphertext = Uint8Array.from(atob(dataB64), c => c.charCodeAt(0));
-  const plain = await crypto.subtle.decrypt(
-    { name: 'AES-GCM', iv }, key, ciphertext
-  );
-  return new TextDecoder().decode(plain);
-}
-
-// 加密 Blob → 返回 base64 {iv, data}（大文件安全编码）
-async function encryptBlob(blob) {
-  const key = await getEncryptionKey();
-  const iv = crypto.getRandomValues(new Uint8Array(12));
-  const arrayBuf = await blob.arrayBuffer();
-  const ciphertext = await crypto.subtle.encrypt(
-    { name: 'AES-GCM', iv }, key, arrayBuf
-  );
-  const ctBytes = new Uint8Array(ciphertext);
-  return {
-    iv: btoa(String.fromCharCode(...iv)),
-    data: bufferToBase64(ctBytes)
-  };
-}
-
-// 解密 base64 → Blob（大文件安全解码）
-async function decryptBlob(ivB64, dataB64, type = 'image/jpeg') {
-  const key = await getEncryptionKey();
-  const iv = base64ToBuffer(ivB64);
-  const ciphertext = base64ToBuffer(dataB64);
-  const plain = await crypto.subtle.decrypt(
-    { name: 'AES-GCM', iv }, key, ciphertext
-  );
-  return new Blob([plain], { type });
-}
-
-// 大文件安全：Uint8Array → Base64（分块避免栈溢出）
-function bufferToBase64(bytes) {
-  const len = bytes.length;
-  const chunkSize = 0x8000; // 32KB 每块
-  let result = '';
-  for (let i = 0; i < len; i += chunkSize) {
-    const chunk = bytes.subarray(i, Math.min(i + chunkSize, len));
-    result += String.fromCharCode.apply(null, chunk);
-  }
-  return btoa(result);
-}
-
-// Base64 → Uint8Array（分块解码）
-function base64ToBuffer(b64) {
-  const bin = atob(b64);
-  const bytes = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) {
-    bytes[i] = bin.charCodeAt(i);
-  }
-  return bytes;
-}
-
-async function setupSync() {
-  const token = $('#syncTokenInput').value.trim();
-  if (!token) { showToast('请输入同步密钥', 'error'); return; }
-  try {
-    const resp = await fetch('https://api.github.com/user', {
-      headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json' }
-    });
-    if (!resp.ok) throw new Error('invalid');
-    localStorage.setItem('cloud_token', token);
-    $('#syncTokenInput').value = '';
-    updateSyncStatus();
-    // 确保密码已设置，否则加密密钥无法派生
-    const pwHash = localStorage.getItem('passwordHash');
-    if (!pwHash) { showToast('请先设置锁屏密码再激活同步', 'error'); return; }
-    getEncryptionKey(); // 触发盐值生成
-    showToast('🔒 端到端加密同步已激活！', 'success');
-    await syncFromCloud();
-    refreshAll();
-  } catch (e) { showToast('密钥无效，请重试', 'error'); }
-}
-
-async function syncFromCloud() {
-  const token = getSyncToken();
-  if (!token) return;
-  const stats = { memories: 0, photos: 0, failed: 0 };
-  try {
-    const resp = await fetch(CLOUD_API + '/' + SYNC_DATA_FILE, {
-      headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json' }
-    });
-    if (!resp.ok) { console.log('Cloud: no data file yet'); return; }
-    const apiResp = await resp.json();
-    if (!apiResp.content) { console.log('Cloud: empty content'); return; }
-    let rawContent = atob(apiResp.content);
-    let enc;
-    try { enc = JSON.parse(rawContent); }
-    catch (e) { console.log('Cloud: old format, try raw'); enc = apiResp; }
-    if (!enc.iv || !enc.data) { console.log('Cloud: unreadable format'); return; }
-    const json = await decryptData(enc.iv, enc.data);
-    const cloudData = JSON.parse(json);
-    const local = await dbGetAll('memories', 'byDate', 'prev');
-    // 用数字ID做Map键（IndexedDB autoIncrement 主键是数字）
-    const localMap = new Map(local.map(m => [Number(m.id), m]));
-    stats.memories = cloudData.length;
-
-    for (const cm of cloudData) {
-      // ✅ 强制 id 为数字，修复 JSON 序列化导致的字符串类型不匹配
-      cm.id = Number(cm.id);
-      if (!cm.id) { stats.failed++; continue; }
-
-      const localItem = localMap.get(cm.id);
-      // 新增或云端更新的才同步
-      if (!localItem || (cm.createdAt && localItem.createdAt !== cm.createdAt)) {
-        // 有加密照片标记且本地没有，下载照片
-        if (cm._hasImage && (!localItem || !localItem.fullImage)) {
-          try {
-            const imgResp = await fetch(CLOUD_API + '/photos/' + cm.id + '.enc', {
-              headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json' }
-            });
-            if (imgResp.ok) {
-              const imgApi = await imgResp.json();
-              if (imgApi.content) {
-                let imgEnc;
-                try { imgEnc = JSON.parse(atob(imgApi.content)); }
-                catch (e2) { imgEnc = imgApi; }
-                if (imgEnc.iv && imgEnc.data) {
-                  const blob = await decryptBlob(imgEnc.iv, imgEnc.data);
-                  cm.fullImage = blob;
-                  cm.thumbnail = await resizeBlob(blob, 300, 0.6);
-                  stats.photos++;
-                }
-              }
-            }
-          } catch (e) { stats.failed++; console.log('Photo #' + cm.id + ' failed:', e.message); }
-        }
-        // 保留本地已有的大文件
-        if (localItem && !cm.fullImage) {
-          cm.fullImage = localItem.fullImage;
-          cm.thumbnail = localItem.thumbnail;
-        }
-        await dbPut('memories', cm);
-        // ✅ 验证写入成功
-        const verify = await dbGet('memories', cm.id);
-        if (verify) {
-          console.log('verify synced record #' + cm.id, verify.title, 'hasImage:', !!verify.fullImage);
-        } else {
-          console.error('❌ dbPut failed for #' + cm.id + ' - record not found after put');
-          stats.failed++;
-        }
-      }
-    }
-    updateSyncStatus();
-    console.log('📥 同步完成:', stats.memories + '条记忆,' + stats.photos + '张照片,' + stats.failed + '个失败');
-    if (stats.failed > 0) showToast('📥 ' + stats.memories + '条记忆, ' + stats.photos + '张照片 (' + stats.failed + '张需对方重新上传)', 'info');
-  } catch (e) {
-    console.log('Cloud sync error:', e.message);
-    showToast('同步失败，请检查密钥和网络', 'error');
-  }
-}
-
-// 调整图片尺寸（从Blob）
-async function resizeBlob(blob, maxDim, quality) {
-  const url = URL.createObjectURL(blob);
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => {
-      let w = img.width, h = img.height;
-      if (w > maxDim || h > maxDim) {
-        const ratio = Math.min(maxDim / w, maxDim / h);
-        w = Math.round(w * ratio); h = Math.round(h * ratio);
-      }
-      const canvas = document.createElement('canvas');
-      canvas.width = w; canvas.height = h;
-      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-      canvas.toBlob(b => { URL.revokeObjectURL(url); resolve(b); }, 'image/jpeg', quality);
-    };
-    img.onerror = reject;
-    img.src = url;
-  });
-}
-
-async function uploadToCloud(memory) {
-  const token = getSyncToken();
-  if (!token) return;
-  try {
-    let cloudData = [], sha = null;
-    try {
-      const r = await fetch(CLOUD_API + '/' + SYNC_DATA_FILE, {
-        headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json' }
-      });
-      if (r.ok) {
-        const apiResp = await r.json();
-        // GitHub API 返回 { content: "base64...", sha: "..." }
-        const rawContent = atob(apiResp.content);
-        const enc = JSON.parse(rawContent);
-        const json = await decryptData(enc.iv, enc.data);
-        cloudData = JSON.parse(json);
-        sha = apiResp.sha;
-      }
-    } catch (e) {}
-
-    const clean = { ...memory };
-    delete clean.thumbnail; delete clean.fullImage;
-    clean._hasImage = !!memory.fullImage;
-
-    const idx = cloudData.findIndex(m => Number(m.id) === Number(clean.id));
-    if (idx >= 0) cloudData[idx] = clean;
-    else cloudData.push(clean);
-
-    const json = JSON.stringify(cloudData);
-    const enc = await encryptData(json);
-    await githubPut(SYNC_DATA_FILE, JSON.stringify(enc), '💕 记忆 #' + memory.id);
-
-    // 🔒 加密照片后上传
-    if (memory.fullImage) {
-      console.log('📸 uploadToCloud photo #' + memory.id);
-      const encImg = await encryptBlob(memory.fullImage);
-      await githubPut('photos/' + memory.id + '.enc', JSON.stringify(encImg), '📸 照片 #' + memory.id);
-      console.log('📸 uploadToCloud photo #' + memory.id + ' OK');
-    }
-    console.log('🔒 已加密同步到云端: #' + memory.id);
-  } catch (e) { console.error('Sync err:', e); }
-}
-
-async function syncNow() {
-  const token = getSyncToken();
-  if (!token) { showToast('请先在设置里配置同步密钥', 'info'); return; }
-  showToast('🔒 正在全量同步（含照片）...', 'info');
-  try {
-    const all = await dbGetAll('memories', 'byDate', 'prev');
-    const clean = all.map(m => { const c = { ...m }; delete c.thumbnail; delete c.fullImage; c._hasImage = !!m.fullImage; return c; });
-    const json = JSON.stringify(clean);
-    const enc = await encryptData(json);
-    await githubPut(SYNC_DATA_FILE, JSON.stringify(enc), '🔄 全量同步(' + clean.length + '条)');
-
-    // 逐张上传照片
-    let photoCount = 0;
-    for (const m of all) {
-      if (m.fullImage) {
-        try {
-          console.log('📸 photo #' + m.id, 'blob:', (m.fullImage.size || m.fullImage.byteLength || '?'), 'bytes');
-          const encImg = await encryptBlob(m.fullImage);
-          await githubPut('photos/' + m.id + '.enc', JSON.stringify(encImg), '📸 照片 #' + m.id);
-          photoCount++;
-          console.log('📸 photo #' + m.id + ' uploaded OK');
-        } catch (e) { console.error('Photo upload fail #' + m.id, e.message); }
-      }
-    }
-    showToast('✅ 同步完成！' + clean.length + '条记忆 + ' + photoCount + '张照片', 'success');
-  } catch (e) { showToast('同步失败: ' + e.message, 'error'); }
-}
-
-// ── 通用 GitHub PUT 上传辅助函数 ──
-async function githubPut(path, contentJson, message) {
-  const token = getSyncToken();
-  if (!token) throw new Error('no token');
-  // 先获取现有 SHA（如果文件已存在）
-  let sha = null;
-  try {
-    const cr = await fetch(CLOUD_API + '/' + path, {
-      headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json' }
-    });
-    if (cr.ok) { const ex = await cr.json(); sha = ex.sha; }
-  } catch (e) {}
-  const body = { message, content: btoa(contentJson) };
-  if (sha) body.sha = sha;
-  const resp = await fetch(CLOUD_API + '/' + path, {
-    method: 'PUT', headers: {
-      'Authorization': 'token ' + token,
-      'Accept': 'application/vnd.github+json',
-      'Content-Type': 'application/json'
-    }, body: JSON.stringify(body)
-  });
-  if (!resp.ok) {
-    const errText = await resp.text();
-    console.error('GitHub PUT ' + path + ' FAILED:', resp.status, errText.substring(0,300));
-    throw new Error('GitHub PUT ' + resp.status + ': ' + errText.substring(0,100));
-  }
-  return resp.json();
-}
-
-async function resetCloud() {
-  const token = getSyncToken();
-  if (!token) { showToast('请先激活云同步', 'info'); return; }
-  if (!confirm('⚠️ 清除云端所有数据？本地数据不会丢失。')) return;
-  showToast('🗑️ 正在清除云端...', 'info');
-  try {
-    const enc = await encryptData('[]');
-    await githubPut(SYNC_DATA_FILE, JSON.stringify(enc), '🔄 云端重置');
-    showToast('✅ 云端已清除，请重新上传', 'success');
-  } catch (e) { showToast('清除失败: ' + e.message, 'error'); }
-}
-
 // ══════════════════════════════════════════════════════════════
 // 4. IndexedDB
+// ══════════════════════════════════════════════════════════════
 function openDB() {
   return new Promise((resolve, reject) => {
     const req = indexedDB.open(DB_NAME, DB_VERSION);
@@ -1586,13 +1166,12 @@ function dbGet(storeName, key) {
 }
 
 function dbDelete(storeName, key) {
-  console.log('dbDelete store:', storeName, 'key:', key, typeof key);
   return openDB().then(db => {
     return new Promise((resolve, reject) => {
       const tx = db.transaction(storeName, 'readwrite');
       const req = tx.objectStore(storeName).delete(key);
-      req.onsuccess = () => { console.log('dbDelete OK for key:', key); resolve(); };
-      req.onerror = (e) => { console.error('dbDelete FAIL for key:', key, e.target.error); reject(e.target.error); };
+      req.onsuccess = () => resolve();
+      req.onerror = (e) => reject(e.target.error);
       tx.oncomplete = () => db.close();
     });
   });
@@ -1782,66 +1361,6 @@ function tryAutoPlayMusic() {
   }
 }
 
-// ── 从云端删除一条记录 ──
-async function deleteFromCloud(targetId) {
-  const token = getSyncToken();
-  if (!token) return;
-  try {
-    let cloudData = [];
-    const r = await fetch(CLOUD_API + '/' + SYNC_DATA_FILE, {
-      headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json' }
-    });
-    if (r.ok) {
-      const apiResp = await r.json();
-      const rawContent = atob(apiResp.content);
-      const enc = JSON.parse(rawContent);
-      const json = await decryptData(enc.iv, enc.data);
-      cloudData = JSON.parse(json);
-    }
-    cloudData = cloudData.filter(m => Number(m.id) !== Number(targetId));
-    const json = JSON.stringify(cloudData);
-    const enc = await encryptData(json);
-    await githubPut(SYNC_DATA_FILE, JSON.stringify(enc), '🗑️ 删除 #' + targetId);
-    console.log('☁️ 云端已删除 #' + targetId);
-  } catch (e) { console.log('Cloud delete skip:', e.message); }
-}
-
-// ── 全量上传云同步 ──
-async function uploadToCloudAll() {
-  if (!syncEnabled()) return;
-  const all = await dbGetAll('memories', 'byDate', 'prev');
-  const clean = all.map(m => { const c = { ...m }; delete c.thumbnail; delete c.fullImage; c._hasImage = !!m.fullImage; return c; });
-  const json = JSON.stringify(clean);
-  const enc = await encryptData(json);
-  await githubPut(SYNC_DATA_FILE, JSON.stringify(enc), '🔄 全量同步');
-  console.log('☁️ 全量同步完成');
-}
-
-// ── PWA 安装 ──
-let deferredPrompt = null;
-
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  const btn = $('#installBtn');
-  if (btn) btn.style.display = '';
-});
-
-async function installApp() {
-  if (!deferredPrompt) {
-    const manual = $('#installManual');
-    if (manual) { manual.querySelector('details').open = true; manual.scrollIntoView({behavior:'smooth'}); }
-    showToast('请展开下方教程，按步骤操作 📖', 'info');
-    return;
-  }
-  deferredPrompt.prompt();
-  const result = await deferredPrompt.userChoice;
-  if (result.outcome === 'accepted') {
-    showToast('安装成功！💕', 'success');
-  }
-  deferredPrompt = null;
-}
-
 function resetApp() {
   if (confirm('确定要重置吗？这将删除所有数据，包括照片、日记和设置。')) {
     if (confirm('真的确定吗？此操作不可撤销！')) {
@@ -1861,7 +1380,6 @@ function resetApp() {
 const uploadZone = $('#uploadZone');
 const photoInput = $('#photoInput');
 
-if (uploadZone && photoInput) {
 uploadZone.addEventListener('click', () => photoInput.click());
 photoInput.addEventListener('change', (e) => {
   if (e.target.files[0]) handlePhotoSelect(e.target.files[0]);
@@ -1882,7 +1400,6 @@ uploadZone.addEventListener('drop', (e) => {
     handlePhotoSelect(file);
   }
 });
-} // end null check
 
 // ══════════════════════════════════════════════════════════════
 // 8. 保存记忆
@@ -1901,18 +1418,17 @@ async function saveMemory() {
   saveBtn.disabled = true;
   saveBtn.textContent = '⏳ 保存中...';
 
-  let savedMemory = null;
   try {
     if (currentMode === 'photo') {
       if (editingMemoryId) {
+        // 编辑已有照片记忆
         const mem = await dbGet('memories', editingMemoryId);
         mem.date = date;
         mem.title = title;
         await dbPut('memories', mem);
-        savedMemory = mem;
       } else {
         if (!pendingPhotoBlob) { showToast('请选择一张照片 📷', 'error'); saveBtn.disabled = false; saveBtn.textContent = '💾 保存回忆'; return; }
-        const newId = await dbAdd('memories', {
+        await dbAdd('memories', {
           type: 'photo',
           date: date,
           title: title,
@@ -1922,7 +1438,6 @@ async function saveMemory() {
           imageFileName: pendingPhotoFile ? pendingPhotoFile.name : 'photo.jpg',
           createdAt: new Date().toISOString()
         });
-        savedMemory = await dbGet('memories', newId);
       }
       resetPhotoUpload();
     } else {
@@ -1934,9 +1449,8 @@ async function saveMemory() {
         mem.title = title;
         mem.content = content;
         await dbPut('memories', mem);
-        savedMemory = mem;
       } else {
-        const newId = await dbAdd('memories', {
+        await dbAdd('memories', {
           type: 'journal',
           date: date,
           title: title,
@@ -1945,7 +1459,6 @@ async function saveMemory() {
           fullImage: null,
           createdAt: new Date().toISOString()
         });
-        savedMemory = await dbGet('memories', newId);
       }
       $('#journalContent').value = '';
     }
@@ -1957,12 +1470,8 @@ async function saveMemory() {
     saveBtn.textContent = '💾 保存回忆';
 
     // 刷新
-    await loadTimeline();
+    loadTimeline();
     loadJournals();
-    // 云端同步：直接上传刚保存的记忆对象，不重新查询
-    if (syncEnabled() && savedMemory) {
-      uploadToCloud(savedMemory);
-    }
   } catch (err) {
     if (err.name === 'QuotaExceededError') {
       showToast('存储空间不足，请删除一些旧照片', 'error');
@@ -1983,14 +1492,8 @@ let displayedCount = 0;
 
 async function loadTimeline() {
   try {
-    // 先尝试云端同步
-    if (syncEnabled()) { await syncFromCloud(); }
     allMemories = await dbGetAll('memories', 'byDate', 'prev');
     displayedCount = 0;
-    const container = $('#timelineContainer');
-    if (container) {
-      container.innerHTML = '<div class="empty-state" id="timelineEmpty"><div class="empty-icon">📸</div><div class="empty-text">还没有回忆</div><div class="empty-hint">点击下方 + 添加你们的第一个瞬间</div></div>';
-    }
     renderTimelineBatch();
   } catch (err) {
     console.error('加载时间轴失败:', err);
@@ -2064,8 +1567,6 @@ function showDetail(mem) {
   $('#modalEditBtn').onclick = () => editMemory(mem);
   $('#modalDeleteBtn').onclick = () => deleteMemory(mem.id);
   $('#detailModal').style.display = 'flex';
-  // 把记忆 ID 存到 modal 元素上，确保 HTML onclick 也能拿到
-  document.getElementById('detailModal')._memoryId = mem.id;
   document.body.style.overflow = 'hidden';
 }
 
@@ -2082,34 +1583,14 @@ function closeDetail(e) {
 }
 
 async function deleteMemory(id) {
-  const rawId = id || currentDetailId || document.getElementById('detailModal')._memoryId;
-  const targetId = Number(rawId);
-  if (!targetId) {
-    showToast('删除失败：未找到记忆', 'error');
-    return;
-  }
+  if (!confirm('确定要删除这条回忆吗？')) return;
   try {
-    const before = await dbGet('memories', targetId);
-    console.log('before delete', before);
-    if (!before) {
-      showToast('删除失败：记录不存在', 'error');
-      return;
-    }
-    if (!confirm('确定要删除这条回忆吗？')) return;
-    await dbDelete('memories', targetId);
-    const after = await dbGet('memories', targetId);
-    console.log('after delete', after); // 应为 undefined
-    showToast('已删除回忆', 'success');
-    // 云端同步删除
-    if (syncEnabled()) { deleteFromCloud(targetId); }
+    await dbDelete('memories', id || currentDetailId);
+    showToast('回忆已删除', 'info');
     closeDetail();
-    // 重新加载时间轴（先清空容器再渲染）
-    await loadTimeline();
-    loadJournals();
-    updateAnniversaryBanner();
+    refreshAll();
   } catch (err) {
-    console.error('删除失败', err);
-    showToast('删除失败，请重试', 'error');
+    showToast('删除失败', 'error');
   }
 }
 
@@ -2142,6 +1623,7 @@ async function loadJournals() {
 
 function renderJournalList(journals) {
   const container = $('#journalContainer');
+  const empty = $('#journalEmpty');
   const searchTerm = ($('#journalSearch').value || '').toLowerCase();
 
   const filtered = searchTerm
@@ -2150,14 +1632,12 @@ function renderJournalList(journals) {
         (j.content || '').toLowerCase().includes(searchTerm))
     : journals;
 
-  container.innerHTML = '<div class="empty-state" id="journalEmpty"><div class="empty-icon">📖</div><div class="empty-text">还没有日记</div><div class="empty-hint">去添加页写下你的第一篇恋爱日记吧</div></div>';
-  const empty = $('#journalEmpty');
-
+  container.innerHTML = '';
   if (filtered.length === 0) {
-    if (empty) empty.style.display = '';
+    empty.style.display = '';
     return;
   }
-  if (empty) empty.style.display = 'none';
+  empty.style.display = 'none';
 
   filtered.forEach((mem, i) => {
     const card = createMemoryCard(mem, i);
@@ -2312,8 +1792,8 @@ function renderPresetPicker() {
     if (bgType === 'preset' && key === currentPreset) item.classList.add('selected');
     item.style.background = css.replace('radial-gradient', 'linear-gradient').replace(/ellipse[^,]+,/g, '135deg,');
     // 简化渐变展示
-    const colors = css.match(/#[0-9a-fA-F]{6}/g) || ['#ff6b81','#0a0a12'];
-    item.style.background = `linear-gradient(135deg, ${colors[0] || '#ff6b81'}, ${colors[1] || '#0a0a12'})`;
+    const colors = css.match(/#[0-9a-fA-F]{6}/g) || ['#e8a0b0','#f5c6d0'];
+    item.style.background = `linear-gradient(135deg, ${colors[0] || '#c97a8f'}, ${colors[1] || '#0a0a12'})`;
     item.title = key;
     item.onclick = () => {
       localStorage.setItem('bgType', 'preset');
@@ -2386,7 +1866,7 @@ function toggleMusic() {
 function updateMusicUI() {
   const playing = !bgmAudio.paused;
   musicFAB.classList.toggle('playing', playing);
-  musicFAB.textContent = playing ? '🎵' : '🔇';
+  musicFAB.textContent = playing ? '🎵' : '🎵';
   $('#musicToggleBtn').textContent = playing ? '⏸️ 暂停音乐' : '▶️ 播放音乐';
 }
 
@@ -2480,7 +1960,6 @@ let heartsAnimationId = null;
 const MAX_HEARTS = window.innerWidth < 768 ? 30 : 50;
 
 function initHeartsCanvas() {
-  if (!heartsCtx) return; // canvas not found, skip animation
   resizeHeartsCanvas();
   window.addEventListener('resize', resizeHeartsCanvas);
   if (!heartsAnimationId) {
@@ -2497,7 +1976,6 @@ function initHeartsCanvas() {
 }
 
 function resizeHeartsCanvas() {
-  if (!heartsCanvas || !heartsCtx) return;
   const dpr = window.devicePixelRatio || 1;
   heartsCanvas.width = window.innerWidth * dpr;
   heartsCanvas.height = window.innerHeight * dpr;
@@ -2509,10 +1987,10 @@ function spawnHeart() {
   if (hearts.length >= MAX_HEARTS) return;
   const theme = localStorage.getItem('theme') || '';
   const colors = {
-    '': ['#ff6b81', '#ffb8c6', '#ff8fa3'],
-    'blush': ['#f8a4c8', '#fcd5e4', '#ffb8d0'],
-    'lavender': ['#c3cfe2', '#d4c5e2', '#b8a9c9'],
-    'sunset': ['#ff9a76', '#ffc3a0', '#ffb088'],
+    '': ['#c97a8f', '#ffb8c6', '#ff8fa3'],
+    'blush': ['#f0a0b8', '#f8d0dc', '#e8879e'],
+    'lavender': ['#c3b8d8', '#d8cce8', '#b8a8d0'],
+    'sunset': ['#f0a888', '#f8cdb8', '#e89a78'],
   };
   const palette = colors[theme] || colors[''];
   hearts.push({
@@ -2531,7 +2009,6 @@ function spawnHeart() {
 }
 
 function heartsLoop(timestamp) {
-  if (!heartsCtx) return;
   if (document.hidden) {
     heartsAnimationId = requestAnimationFrame(heartsLoop);
     return;
@@ -2665,8 +2142,10 @@ document.addEventListener('keydown', (e) => {
 // 21. 事件委托
 // ══════════════════════════════════════════════════════════════
 
-// 键盘输入函数 - 通过 onclick 调用，手机/电脑都可靠
-function pinPress(key) {
+// 键盘事件
+$('#keypad').addEventListener('click', (e) => {
+  const key = e.target.dataset.key;
+  if (!key) return;
   if (key === 'clear') { clearPin(); return; }
   if (key === 'ok') { submitPin(); return; }
   if (pinInput.length < PIN_LENGTH) {
@@ -2674,8 +2153,7 @@ function pinPress(key) {
     updatePinDots();
     if (pinInput.length === PIN_LENGTH) submitPin();
   }
-}
-window.pinPress = pinPress;
+});
 
 // Tab切换
 $('#tabBar').addEventListener('click', (e) => {
@@ -2766,10 +2244,7 @@ async function init() {
   console.log('💕 Love Memory 已就绪');
   console.log('  - 密码保护：' + (passwordHash ? '已设置' : '首次使用，请设置密码'));
   console.log('  - 纪念日：' + (annDate || '未设置，请在设置中配置'));
-  console.log('  - ☁️ 云同步：' + (getSyncToken() ? '已激活' : '请在设置中配置密钥'));
-  updateSyncStatus();
-  // 自动从云端同步
-  if (syncEnabled()) { syncFromCloud().then(() => loadTimeline()); }
+  console.log('  - 爱心飘落动画已准备');
 }
 
 // 全局函数暴露
@@ -2789,33 +2264,7 @@ window.changePassword = changePassword;
 window.exportData = exportData;
 window.deleteAllData = deleteAllData;
 window.filterJournals = filterJournals;
-window.installApp = installApp;
-async function pullFromCloud() {
-  const token = getSyncToken();
-  if (!token) { showToast('请先激活云同步', 'info'); return; }
-  showToast('📥 正在从云端下载...', 'info');
-  try {
-    await syncFromCloud();
-    await refreshAll();
-    showToast('✅ 下载完成！', 'success');
-  } catch (e) {
-    showToast('下载失败: ' + e.message, 'error');
-  }
-}
-window.setupSync = setupSync;
-window.syncNow = syncNow;
-window.pullFromCloud = pullFromCloud;
-window.resetCloud = resetCloud;
-window.deleteFromCloud = deleteFromCloud;
-window.uploadToCloudAll = uploadToCloudAll;
 window.resetApp = resetApp;
-
-// ── 清除旧的 Service Worker（之前版本可能导致缓存问题）──
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.getRegistrations().then(regs => {
-    regs.forEach(r => { r.unregister(); console.log('🗑️ 旧SW已清除'); });
-  });
-}
 
 // 启动应用
 init();
